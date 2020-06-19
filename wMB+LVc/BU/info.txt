@@ -1,0 +1,1 @@
+this code worked correctly for the 3 cases (conv MB, wMB, wMB+LVc) for both my phantom (scan_16) & for Hong's phantom (scan_69)

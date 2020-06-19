@@ -1,0 +1,133 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>wMB_apriori</title><meta name="generator" content="MATLAB 9.2"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2017-08-16"><meta name="DC.source" content="wMB_apriori.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">estimate 'P_r(t_ij)' by Monte Carlo --&gt; probability that the wave detected at (transducer i, time j) is a reflected or scattered wave wit unit amplitude</a></li><li><a href="#3">calc ' <img src="wMB_apriori_eq12456094157552932561.png" alt="$P_d(t_ij)$" style="width:42px;height:16px;"> ' --&gt; probability that the wave detected at (transducer i, time j) is a direct wave (from a point on the circumference del(A_ij,int)) --</a></li></ul></div><pre class="codeinput"><span class="comment">% main idea: use expression for 'P_r(t_ij)' when acoustic apriori are known (eq. 7 in APL 2011) in the expression for</span>
+<span class="comment">% 'P_d(t_ij)' for the MB case (eq.9 in PMB 2013)</span>
+</pre><h2 id="2">estimate 'P_r(t_ij)' by Monte Carlo --&gt; probability that the wave detected at (transducer i, time j) is a reflected or scattered wave wit unit amplitude</h2><p>(eq 7. in APL 2011)</p><pre class="codeinput">P_r = calculate_time_histograms_refs( logicalMask_A, logicalMask_B, t, hist.nPairs, r_sensor, angle_sensor, c, hist.nHist, im_w, n );
+</pre><h2 id="3">calc ' <img src="wMB_apriori_eq12456094157552932561.png" alt="$P_d(t_ij)$" style="width:42px;height:16px;"> ' --&gt; probability that the wave detected at (transducer i, time j) is a direct wave (from a point on the circumference del(A_ij,int)) --</h2><p>eq 2. in APL 2011</p><pre class="codeinput">P_d = zeros( 1, nDet*sizeT );
+WT = 1;
+<span class="keyword">for</span> i = 1:nDet          <span class="comment">% for each transducer</span>
+  <span class="keyword">switch</span> WT
+    <span class="keyword">case</span> 1
+      P_d((i-1)*sizeT+1 : i*sizeT) = max( 0, 1-w*(P_r(:,i)/max( P_r(:,i) )) );    <span class="comment">% by substituing eq. 8 in eq. 2</span>
+
+    <span class="keyword">case</span> 2
+      P_d((i-1)*sizeT+1 : i*sizeT) = max( 0, 1-w*(P_r(:,i)/max( P_r(:,i) )).^2 );
+
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+<span class="comment">% put 'P_d' in matrix form for use with MB (eq.9 in PMB 2013)</span>
+pos = linspace( 1, nDet*sizeT, nDet*sizeT );
+W = sparse( pos, pos, P_d, nDet*sizeT, nDet*sizeT );
+<span class="comment">% weighting A_mat &amp; b_vec</span>
+A_matW = W*A_mat;
+b_vec_In = prepareMeasuredPressureVec( sigMat_current, ts, t, nDet );       <span class="comment">% interploate to lower res &amp; reshape to col-major</span>
+b_vecW = W*b_vec_In;
+
+<span class="comment">% do recon</span>
+ReconW(:, :, 1, slc_idx, rep_idx, wl_idx) = reconstruction( A_matW, b_vecW, n, RECON_METHOD, MB_regu, IMPOSE_NONNEGATIVITY );
+</pre><pre class="codeoutput">MB_Tik done!
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2017a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+% main idea: use expression for 'P_r(t_ij)' when acoustic apriori are known (eq. 7 in APL 2011) in the expression for 
+% 'P_d(t_ij)' for the MB case (eq.9 in PMB 2013)
+
+
+
+%%% estimate 'P_r(t_ij)' by Monte Carlo REPLACE_WITH_DASH_DASH> probability that the wave detected at (transducer i, time j) is a reflected or scattered wave wit unit amplitude 
+% (eq 7. in APL 2011)
+P_r = calculate_time_histograms_refs( logicalMask_A, logicalMask_B, t, hist.nPairs, r_sensor, angle_sensor, c, hist.nHist, im_w, n );
+
+%%% calc ' $P_d(t_ij)$ ' REPLACE_WITH_DASH_DASH> probability that the wave detected at (transducer i, time j) is a direct wave (from a point on the circumference del(A_ij,int)) REPLACE_WITH_DASH_DASH
+% eq 2. in APL 2011
+P_d = zeros( 1, nDet*sizeT );
+WT = 1;
+for i = 1:nDet          % for each transducer
+  switch WT
+    case 1
+      P_d((i-1)*sizeT+1 : i*sizeT) = max( 0, 1-w*(P_r(:,i)/max( P_r(:,i) )) );    % by substituing eq. 8 in eq. 2
+      
+    case 2
+      P_d((i-1)*sizeT+1 : i*sizeT) = max( 0, 1-w*(P_r(:,i)/max( P_r(:,i) )).^2 );
+      
+  end
+end
+% put 'P_d' in matrix form for use with MB (eq.9 in PMB 2013)
+pos = linspace( 1, nDet*sizeT, nDet*sizeT );
+W = sparse( pos, pos, P_d, nDet*sizeT, nDet*sizeT );
+% weighting A_mat & b_vec
+A_matW = W*A_mat;
+b_vec_In = prepareMeasuredPressureVec( sigMat_current, ts, t, nDet );       % interploate to lower res & reshape to col-major
+b_vecW = W*b_vec_In;
+
+% do recon
+ReconW(:, :, 1, slc_idx, rep_idx, wl_idx) = reconstruction( A_matW, b_vecW, n, RECON_METHOD, MB_regu, IMPOSE_NONNEGATIVITY );
+
+
+##### SOURCE END #####
+--></body></html>

@@ -1,0 +1,3 @@
+(Elena) --> Regarding the difference between rev75 and rev557, since the later accounts for changes over more than 4 years it would be quite a long email to list them all ??
+But most importantly, there are no fundamental changes rather features and bugfixes that were made primarily to be consistent with the software, e.g. such updating loadMSOT() to handle new data structure, improving error handling etc. 
+We always recommend using the latest revision. 

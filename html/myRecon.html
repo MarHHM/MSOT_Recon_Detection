@@ -1,0 +1,327 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>myRecon</title><meta name="generator" content="MATLAB 9.1"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-12-03"><meta name="DC.source" content="myRecon.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">extract a stack from the whole measures to recon</a></li><li><a href="#3">recon the extracted stack</a></li><li><a href="#4">show specific im</a></li></ul></div><pre class="codeinput">javaaddpath <span class="string">MSOTBeans\msotbeans.jar</span>
+javaaddpath <span class="string">java_class\recon.jar</span>
+javaaddpath <span class="string">java_class\patbeans.jar</span>
+javaaddpath <span class="string">java_class\xmlbeans-2.5.0\lib\xbean.jar</span>
+
+clearvars;
+
+<span class="comment">% params</span>
+n = 200;        <span class="comment">% im width (pixels)</span>
+image_width = 20e-3;        <span class="comment">% im width (m)</span>
+filter_min = 0.02e6;
+filter_max = 7e6;
+RECON_METHOD = <span class="string">'MB_Tik'</span>;
+NONNEG = 1;
+
+<span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+<span class="comment">% loading into RAM</span>
+[FileNamesigMat, PathNamesigMat, FilterIndexsigMat] = uigetfile({<span class="string">'*.msot'</span>});
+[datainfo] = loadMSOT([PathNamesigMat <span class="string">'\'</span> FileNamesigMat]);
+[sigMat] = loadMSOTSignals(datainfo);
+</pre><pre class="codeoutput error">Error using loadMSOT (line 69)
+Selected XML file could not be loaded. Check well-formedness.\nJava exception occurred: 
+java.io.FileNotFoundException: 
+	at java.io.FileInputStream.open(Native Method)
+	at java.io.FileInputStream.&lt;init&gt;(Unknown Source)
+	at org.apache.xmlbeans.impl.schema.SchemaTypeLoaderBase.parse(SchemaTypeLoaderBase.java:248)
+	at com.itheramedical.msotbeans.DataModelMsotProjectDocument$Factory.parse(Unknown Source)
+
+Error in myRecon (line 19)
+[datainfo] = loadMSOT([PathNamesigMat '\' FileNamesigMat]);
+</pre><h2 id="2">extract a stack from the whole measures to recon</h2><p>limit #reps due to memory limitiation of prefilt fun</p><pre class="codeinput">Zpos_begin = 1;
+Zpos_end = size(sigMat, 4);
+wl_begin = 1;
+wl_end = size(sigMat, 6);
+rep_begin = 1;
+<span class="comment">% rep_end = size(sigMat, 5);</span>
+rep_end = 10;
+run_idx = 1;
+
+sigMat = sigMat(:, :, run_idx, Zpos_begin:Zpos_end, rep_begin:rep_end, wl_begin:wl_end);
+
+<span class="comment">% reading general params from datainfo</span>
+angle_sensor = datainfo.HWDesc.StartAngle : datainfo.HWDesc.StepAngle : datainfo.HWDesc.EndAngle;
+ts = 0 : 1/datainfo.HWDesc.SamplingFrequency : (datainfo.MeasurementDesc.RecordLength-1)/datainfo.HWDesc.SamplingFrequency; <span class="comment">% sampling instants</span>
+avgs = datainfo.MeasurementDesc.Averages;
+runs = datainfo.RunNum;         <span class="comment">% # full studies (usually 1)</span>
+repetitions = datainfo.RepNum;
+slices = numel(datainfo.ZPositions);
+lambdas = numel(datainfo.Wavelengths);
+
+<span class="comment">% pre-filtration</span>
+filter_f = [filter_min filter_max];      <span class="comment">% a band-pass filter (originlay between 100kHz and 8MHz), or maybe try the low pass a little lower (it should be depending on the BW of the transducer)</span>
+sigMat = filter_function(sigMat, filter_f, datainfo.HWDesc.SamplingFrequency);
+</pre><h2 id="3">recon the extracted stack</h2><pre class="codeinput">ReconStack = zeros(n, n, runs, Zpos_end-Zpos_begin+1, rep_end-rep_begin+1, wl_end-wl_begin+1);
+
+<span class="keyword">for</span> run_idx = 1:1
+    <span class="keyword">for</span> slc_idx = Zpos_begin : Zpos_end
+        <span class="keyword">for</span> wl_idx = wl_begin : wl_end
+            <span class="keyword">for</span> rep_idx = rep_begin : rep_end
+                <span class="comment">% extract current measure (2d) to recon it</span>
+                sigMat_current = sigMat(:, :, run_idx, slc_idx, rep_idx, wl_idx);
+
+                <span class="keyword">switch</span> RECON_METHOD
+                    <span class="keyword">case</span> <span class="string">'BackProjection'</span>
+                        Recon_tmp = backproject_luis(sigMat_current, n, datainfo.HWDesc.Radius, angle_sensor, c, <span class="string">'full'</span>, ts, datainfo.HWDesc.SamplingFrequency, image_width, 0, 0);
+                        <span class="keyword">if</span> NONNEG
+                            Recon_tmp = max(Recon_tmp,0);
+                        <span class="keyword">end</span>
+                <span class="keyword">end</span>
+
+                <span class="keyword">if</span> strcmp(RECON_METHOD,<span class="string">'MB_Tik'</span>)||strcmp(RECON_METHOD,<span class="string">'MB_TVL1'</span>)
+                    <span class="comment">% set MB recon params</span>
+                    T = datainfo.AverageTemperature;
+                    c = 12 + round(1.402385 * 1e3 + 5.038813 * T - 5.799136 * 1e-2 * T^2 + 3.287156 * 1e-4 * T^3 - 1.398845 * 1e-6 * T^4 + 2.787860 * 1e-9 * T^5 );
+                    n_angles = 2*n;                                     <span class="comment">% number of points for discretizing the curve</span>
+                    limits(1) = datainfo.HWDesc.Radius-(image_width)*sqrt(2)/2;       <span class="comment">% limits for the signal</span>
+                    limits(2) = datainfo.HWDesc.Radius+(image_width)*sqrt(2)/2;       <span class="comment">% limits for the signal</span>
+                    time_res = 2;                                       <span class="comment">% time resolution for model-based</span>
+                    dx = image_width/n;                                 <span class="comment">% increment in x</span>
+                    dt = dx/(time_res*c);                              <span class="comment">% increment in t employed to make the model-based reconstruction</span>
+                    fac = datainfo.HWDesc.SamplingFrequency/c;
+                    pos_start = max(1,int32((limits(1))*fac));
+                    pos_end = min(datainfo.MeasurementDesc.RecordLength,int32((limits(2))*fac));
+                    t = ts(pos_start):dt:ts(pos_end);           <span class="comment">% downsampled (&amp; cut) time vector  (less than ts)</span>
+                    sizeT = length(t);
+                    regu = 20;
+                    MB_regu = 1e6*(2^((regu-20)));
+
+                    <span class="comment">% check for model matrix if saved, otherwise build &amp; save it</span>
+                    init_folder_name = pwd;
+                    sub_folder_name = <span class="string">'MB matrices'</span>;
+                    folder_name = [init_folder_name <span class="string">'\'</span> sub_folder_name];
+                    <span class="keyword">if</span> exist([folder_name <span class="string">'\'</span> <span class="string">'A_mat_t_res_'</span>,num2str(time_res),<span class="string">'_'</span>,num2str(n),<span class="string">'x'</span>,num2str(n),<span class="string">'_width_'</span>,num2str(image_width*1e3),<span class="string">'_c_'</span>,num2str(c),<span class="string">'.mat'</span>], <span class="string">'file'</span>)
+                        load ([folder_name <span class="string">'\'</span> <span class="string">'A_mat_t_res_'</span>,num2str(time_res),<span class="string">'_'</span>,num2str(n),<span class="string">'x'</span>,num2str(n),<span class="string">'_width_'</span>,num2str(image_width*1e3),<span class="string">'_c_'</span>,num2str(c),<span class="string">'.mat'</span>])
+                    <span class="keyword">else</span>
+                        A_mat = Calculate_MatrixMB_Luis(c,n,image_width,t,datainfo.HWDesc.Radius,angle_sensor,n_angles);
+                        save(([folder_name <span class="string">'\'</span> <span class="string">'A_mat_t_res_'</span>,num2str(time_res),<span class="string">'_'</span>,num2str(n),<span class="string">'x'</span>,num2str(n),<span class="string">'_width_'</span>,num2str(image_width*1e3),<span class="string">'_c_'</span>,num2str(c),<span class="string">'.mat'</span>]) , <span class="string">'A_mat'</span>,<span class="string">'-v7.3'</span>)
+                    <span class="keyword">end</span>
+
+                    <span class="comment">% interpolate raw data to smaller resolution (downsampling)</span>
+                    sigMat2 = zeros(length(t), size(sigMat_current, 2));
+                    <span class="keyword">for</span> j=1:datainfo.HWDesc.NumDetectors
+                        sigMat2(:,j) = interp1(ts, sigMat_current(:,j), t);
+                    <span class="keyword">end</span>
+                    clear <span class="string">sigMat_current</span>;
+
+                    <span class="comment">% reshape interpolated measures to column-major format</span>
+                    b_vec = reshape(sigMat2, sizeT*datainfo.HWDesc.NumDetectors, 1);
+                    clear <span class="string">sigMat2</span>
+
+                    <span class="comment">% do recon</span>
+                    Recon_tmp  = reconstruction(A_mat, b_vec, n, RECON_METHOD, MB_regu, NONNEG);
+                <span class="keyword">end</span>
+
+                ReconStack(:, :, run_idx, slc_idx, rep_idx, wl_idx) = Recon_tmp;
+                clear <span class="string">Recon_tmp</span>;
+
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre><h2 id="4">show specific im</h2><pre class="codeinput">slcToShow = 1;
+wlToShow = 1;
+repToShow = 1;
+reconIm = ReconStack(:, :, 1, slcToShow, repToShow, wlToShow);
+reconIm = addtext(reconIm, n, 1, slcToShow, datainfo.Wavelengths, wlToShow, image_width, c, RECON_METHOD, MB_regu, 0, NONNEG);
+figure, imagesc(reconIm); colormap(<span class="string">'gray'</span>); colorbar ;
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+javaaddpath MSOTBeans\msotbeans.jar
+javaaddpath java_class\recon.jar
+javaaddpath java_class\patbeans.jar
+javaaddpath java_class\xmlbeans-2.5.0\lib\xbean.jar
+
+clearvars;
+
+% params
+n = 200;        % im width (pixels)
+image_width = 20e-3;        % im width (m)
+filter_min = 0.02e6;
+filter_max = 7e6;
+RECON_METHOD = 'MB_Tik';
+NONNEG = 1;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% loading into RAM
+[FileNamesigMat, PathNamesigMat, FilterIndexsigMat] = uigetfile({'*.msot'});
+[datainfo] = loadMSOT([PathNamesigMat '\' FileNamesigMat]);
+[sigMat] = loadMSOTSignals(datainfo);
+
+%% extract a stack from the whole measures to recon
+% limit #reps due to memory limitiation of prefilt fun
+Zpos_begin = 1;
+Zpos_end = size(sigMat, 4);
+wl_begin = 1;
+wl_end = size(sigMat, 6);
+rep_begin = 1;
+% rep_end = size(sigMat, 5);
+rep_end = 10;
+run_idx = 1;
+
+sigMat = sigMat(:, :, run_idx, Zpos_begin:Zpos_end, rep_begin:rep_end, wl_begin:wl_end);
+
+% reading general params from datainfo
+angle_sensor = datainfo.HWDesc.StartAngle : datainfo.HWDesc.StepAngle : datainfo.HWDesc.EndAngle;
+ts = 0 : 1/datainfo.HWDesc.SamplingFrequency : (datainfo.MeasurementDesc.RecordLength-1)/datainfo.HWDesc.SamplingFrequency; % sampling instants
+avgs = datainfo.MeasurementDesc.Averages;
+runs = datainfo.RunNum;         % # full studies (usually 1)
+repetitions = datainfo.RepNum;
+slices = numel(datainfo.ZPositions);
+lambdas = numel(datainfo.Wavelengths);
+
+% pre-filtration
+filter_f = [filter_min filter_max];      % a band-pass filter (originlay between 100kHz and 8MHz), or maybe try the low pass a little lower (it should be depending on the BW of the transducer)
+sigMat = filter_function(sigMat, filter_f, datainfo.HWDesc.SamplingFrequency);
+
+%% recon the extracted stack
+ReconStack = zeros(n, n, runs, Zpos_end-Zpos_begin+1, rep_end-rep_begin+1, wl_end-wl_begin+1);
+
+for run_idx = 1:1
+    for slc_idx = Zpos_begin : Zpos_end
+        for wl_idx = wl_begin : wl_end
+            for rep_idx = rep_begin : rep_end
+                % extract current measure (2d) to recon it
+                sigMat_current = sigMat(:, :, run_idx, slc_idx, rep_idx, wl_idx);
+                
+                switch RECON_METHOD
+                    case 'BackProjection'
+                        Recon_tmp = backproject_luis(sigMat_current, n, datainfo.HWDesc.Radius, angle_sensor, c, 'full', ts, datainfo.HWDesc.SamplingFrequency, image_width, 0, 0);
+                        if NONNEG
+                            Recon_tmp = max(Recon_tmp,0);
+                        end
+                end
+                
+                if strcmp(RECON_METHOD,'MB_Tik')||strcmp(RECON_METHOD,'MB_TVL1')
+                    % set MB recon params
+                    T = datainfo.AverageTemperature;
+                    c = 12 + round(1.402385 * 1e3 + 5.038813 * T - 5.799136 * 1e-2 * T^2 + 3.287156 * 1e-4 * T^3 - 1.398845 * 1e-6 * T^4 + 2.787860 * 1e-9 * T^5 );
+                    n_angles = 2*n;                                     % number of points for discretizing the curve
+                    limits(1) = datainfo.HWDesc.Radius-(image_width)*sqrt(2)/2;       % limits for the signal
+                    limits(2) = datainfo.HWDesc.Radius+(image_width)*sqrt(2)/2;       % limits for the signal
+                    time_res = 2;                                       % time resolution for model-based
+                    dx = image_width/n;                                 % increment in x
+                    dt = dx/(time_res*c);                              % increment in t employed to make the model-based reconstruction
+                    fac = datainfo.HWDesc.SamplingFrequency/c;
+                    pos_start = max(1,int32((limits(1))*fac));
+                    pos_end = min(datainfo.MeasurementDesc.RecordLength,int32((limits(2))*fac));
+                    t = ts(pos_start):dt:ts(pos_end);           % downsampled (& cut) time vector  (less than ts)
+                    sizeT = length(t);
+                    regu = 20;
+                    MB_regu = 1e6*(2^((regu-20)));
+                    
+                    % check for model matrix if saved, otherwise build & save it
+                    init_folder_name = pwd;
+                    sub_folder_name = 'MB matrices';
+                    folder_name = [init_folder_name '\' sub_folder_name];
+                    if exist([folder_name '\' 'A_mat_t_res_',num2str(time_res),'_',num2str(n),'x',num2str(n),'_width_',num2str(image_width*1e3),'_c_',num2str(c),'.mat'], 'file')
+                        load ([folder_name '\' 'A_mat_t_res_',num2str(time_res),'_',num2str(n),'x',num2str(n),'_width_',num2str(image_width*1e3),'_c_',num2str(c),'.mat'])
+                    else
+                        A_mat = Calculate_MatrixMB_Luis(c,n,image_width,t,datainfo.HWDesc.Radius,angle_sensor,n_angles);
+                        save(([folder_name '\' 'A_mat_t_res_',num2str(time_res),'_',num2str(n),'x',num2str(n),'_width_',num2str(image_width*1e3),'_c_',num2str(c),'.mat']) , 'A_mat','-v7.3')
+                    end
+                    
+                    % interpolate raw data to smaller resolution (downsampling)
+                    sigMat2 = zeros(length(t), size(sigMat_current, 2));
+                    for j=1:datainfo.HWDesc.NumDetectors
+                        sigMat2(:,j) = interp1(ts, sigMat_current(:,j), t);
+                    end
+                    clear sigMat_current;
+                    
+                    % reshape interpolated measures to column-major format
+                    b_vec = reshape(sigMat2, sizeT*datainfo.HWDesc.NumDetectors, 1);
+                    clear sigMat2
+                    
+                    % do recon
+                    Recon_tmp  = reconstruction(A_mat, b_vec, n, RECON_METHOD, MB_regu, NONNEG);
+                end
+                
+                ReconStack(:, :, run_idx, slc_idx, rep_idx, wl_idx) = Recon_tmp;
+                clear Recon_tmp;
+                
+            end
+        end
+    end
+end
+
+%% show specific im
+slcToShow = 1;
+wlToShow = 1;
+repToShow = 1;
+reconIm = ReconStack(:, :, 1, slcToShow, repToShow, wlToShow);
+reconIm = addtext(reconIm, n, 1, slcToShow, datainfo.Wavelengths, wlToShow, image_width, c, RECON_METHOD, MB_regu, 0, NONNEG);
+figure, imagesc(reconIm); colormap('gray'); colorbar ;
+
+
+
+
+##### SOURCE END #####
+--></body></html>

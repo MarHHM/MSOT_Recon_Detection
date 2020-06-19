@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    targetNamespace="Header_Schema"
+    xmlns:pat="Header_Schema"
+    elementFormDefault="qualified">
+    
+    <xsd:element name="PAT-ROOT">
+        <xsd:complexType>
+            <xsd:all>
+                <xsd:element name="ADMIN-DATA">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="DATE">
+                                <xsd:complexType>
+                                    <xsd:sequence>
+                                        <xsd:element name="DAY" type="xsd:int"/>
+                                        <xsd:element name="MONTH" type="xsd:int"/>
+                                        <xsd:element name="YEAR" type="xsd:int"/>
+                                    </xsd:sequence>
+                                </xsd:complexType>
+                            </xsd:element>
+                            <xsd:element name="TEAM-MEMBER" maxOccurs="unbounded" type="xsd:string"/>
+                            <xsd:element name="MEASUREMENT-TARGET" type="xsd:string"/>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+                <xsd:element name="MEASUREMENT-DESC">
+                    <xsd:complexType>
+                        <xsd:all>
+                            <xsd:element name="INITIAL-ENERGY" minOccurs="0" type="pat:PHYSICAL-VALUE"></xsd:element>
+                            <xsd:element name="VERTICAL-STEPS" minOccurs="0" type="xsd:int"></xsd:element>
+                            <xsd:element name="WAVELENGTHS" minOccurs="0">
+                                <xsd:complexType>
+                                    <xsd:sequence>
+                                        <xsd:element name="WAVELENGTH" maxOccurs="unbounded" type="pat:NUMBERED-PHYSICAL-VALUE"></xsd:element>
+                                    </xsd:sequence>
+                                </xsd:complexType>
+                            </xsd:element>
+                            <xsd:element name="VERTICAL-DEPTH" minOccurs="0" type="pat:PHYSICAL-VALUE"></xsd:element>
+                            <xsd:element name="REPETITION-RATE" minOccurs="0" type="pat:PHYSICAL-VALUE"></xsd:element>
+                            <xsd:element name="AVERAGES-PER-PROJECTION" minOccurs="0" type="xsd:int"></xsd:element>
+                            <xsd:element name="TEMPERATURE" minOccurs="0" type="pat:PHYSICAL-VALUE"></xsd:element>
+                            <xsd:element name="PROJECTIONS">
+                                <xsd:complexType>
+                                    <xsd:choice>
+                                        <xsd:element name="EQUAL" type="pat:EQUAL-TYPE" maxOccurs="unbounded"/>
+                                        <xsd:element name="PROJECTION" type="pat:PROJECTION-TYPE" maxOccurs="unbounded"/>
+                                        <xsd:element name="MSOT-FRAME" maxOccurs="unbounded">
+                                            <xsd:complexType>
+                                                <xsd:sequence>
+                                                    <xsd:element name="Z-POS" minOccurs="0">
+                                                        <xsd:complexType>
+                                                            <xsd:simpleContent>
+                                                                <xsd:extension base="xsd:decimal">
+                                                                    <xsd:attribute name="axis-ref" type="xsd:int"/>
+                                                                </xsd:extension>
+                                                            </xsd:simpleContent>
+                                                        </xsd:complexType>
+                                                    </xsd:element>
+                                                    <xsd:element name="TEMPERATURE" type="pat:PHYSICAL-VALUE"/>
+                                                    <xsd:element name="WAVELENGTH" type="pat:PHYSICAL-VALUE"/>
+                                                    <xsd:element name="POWER" type="pat:PHYSICAL-VALUE"/>
+                                                    <xsd:element name="RUN" type="xsd:integer" minOccurs="0"/>
+                                                    <xsd:element name="REPETITION" type="xsd:integer" minOccurs="0"/>
+                                                </xsd:sequence>
+                                                <xsd:attribute name="timestamp" type="xsd:long"/>
+                                            </xsd:complexType>
+                                        </xsd:element>
+                                    </xsd:choice>
+                                </xsd:complexType>
+                            </xsd:element>
+                            <xsd:element name="RECORDED-LENGTH" type="xsd:int"></xsd:element>
+                            <xsd:element name="COORDINATE-DEFINITION">
+                                <xsd:complexType>
+                                    <xsd:sequence>
+                                        <xsd:element name="AXIS" minOccurs="3" maxOccurs="3">
+                                            <xsd:complexType>
+                                                <xsd:simpleContent>
+                                                    <xsd:extension base="pat:AXIS-STRING">
+                                                        <xsd:attribute name="number" type="xsd:int" use="required"/>
+                                                        <xsd:attribute name="unit" type="xsd:string" use="required"/>
+                                                        <xsd:attribute name="unit-modifier" type="xsd:string" use="required"/>
+                                                    </xsd:extension>
+                                                </xsd:simpleContent>
+                                            </xsd:complexType>
+                                        </xsd:element>
+                                    </xsd:sequence>
+                                </xsd:complexType>
+                            </xsd:element>
+                            <xsd:element name="SEQUENCE" default="by-wavelength">
+                                <xsd:simpleType>
+                                    <xsd:restriction base="xsd:string">
+                                        <xsd:enumeration value="by-wavelength"/>
+                                        <xsd:enumeration value="by-projection"/>
+                                    </xsd:restriction>
+                                </xsd:simpleType>
+                            </xsd:element>
+                        </xsd:all>
+                    </xsd:complexType>
+                </xsd:element>
+                <xsd:element name="HARDWARE-DESC">
+                    <xsd:complexType>
+                        <xsd:all>
+                            <xsd:element name="VERTICAL-RANGE-PHOTODIODE" minOccurs="0" type="pat:PHYSICAL-VALUE"></xsd:element>
+                            <xsd:element name="AMPLIFICATION" minOccurs="0" type="xsd:int"></xsd:element>
+                            <xsd:element name="SAMPLING-FREQUENCY" type="pat:PHYSICAL-VALUE"></xsd:element>
+                            <xsd:element name="GEOMETRY">
+                                <xsd:simpleType>
+                                    <xsd:restriction base="xsd:string"/>
+                                </xsd:simpleType>
+                            </xsd:element>
+                            <xsd:element name="AD-RANGE" type="pat:PHYSICAL-VALUE"></xsd:element>
+                            <xsd:element name="TRANSDUCER">
+                                <xsd:simpleType>
+                                    <xsd:restriction base="xsd:string"/>
+                                </xsd:simpleType>
+                            </xsd:element>
+                            <xsd:element name="POWER" type="pat:PHYSICAL-VALUE"></xsd:element>
+                            <xsd:element name="SETUP-TYPE" type="xsd:string"></xsd:element>
+                            <xsd:element name="FRAME-DESC" minOccurs="0">
+                                <xsd:complexType>
+                                    <xsd:choice>
+                                        <xsd:element name="PROJECTION" type="pat:PROJECTION-TYPE" maxOccurs="unbounded"/>
+                                        <xsd:element name="EQUAL" type="pat:EQUAL-TYPE"/>
+                                    </xsd:choice>
+                                </xsd:complexType>
+                            </xsd:element>
+                        </xsd:all>
+                    </xsd:complexType>
+                </xsd:element>
+                <xsd:element name="COMMENT" minOccurs="0" maxOccurs="1">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string"/>
+                    </xsd:simpleType>
+                </xsd:element>
+            </xsd:all>
+            <xsd:attribute name="id" type="xsd:string" use="required"/>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:simpleType name="AXIS-STRING">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="x"/>
+            <xsd:enumeration value="y"/>
+            <xsd:enumeration value="z"/>
+            <xsd:enumeration value="r"/>
+            <xsd:enumeration value="phi"/>
+            <xsd:enumeration value="theta"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="PHYSICAL-VALUE">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:double">
+                <xsd:attribute name="unit" type="xsd:string" use="required"/>
+                <xsd:attribute name="unit-modifier" type="xsd:string" use="required"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="NUMBERED-PHYSICAL-VALUE">
+        <xsd:simpleContent>
+            <xsd:extension base="pat:PHYSICAL-VALUE">
+                <xsd:attribute name="number" type="xsd:int" use="required"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+     <xsd:complexType name="PROJECTION-TYPE">
+        <xsd:sequence>
+            <xsd:element name="VALUE" minOccurs="3" maxOccurs="3">
+                <xsd:complexType>
+                    <xsd:simpleContent>
+                        <xsd:extension base="xsd:decimal">
+                            <xsd:attribute name="axis-ref" type="xsd:int" use="required"/>
+                        </xsd:extension>
+                    </xsd:simpleContent>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:sequence>
+        <xsd:attribute name="number" type="xsd:int" use="required"/>
+        <xsd:attribute name="wavelength-ref" type="xsd:string" use="required"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="EQUAL-TYPE">
+        <xsd:sequence>
+            <xsd:element name="START" type="xsd:double"/>
+            <xsd:element name="STEP" type="xsd:double"/>
+            <xsd:element name="END" type="xsd:double"/>
+            <xsd:element name="CONSTANT" minOccurs="2" maxOccurs="2">
+                <xsd:complexType>
+                    <xsd:simpleContent>
+                        <xsd:extension base="xsd:decimal">
+                            <xsd:attribute name="axis-ref" type="xsd:int" use="required"/>
+                        </xsd:extension>
+                    </xsd:simpleContent>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:sequence>
+        <xsd:attribute name="number" type="xsd:int" use="required"/>
+        <xsd:attribute name="axis-ref" type="xsd:int" use="required"/>
+        <xsd:attribute name="wavelength-ref" type="xsd:string" use="required"/>
+    </xsd:complexType>
+</xsd:schema>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
