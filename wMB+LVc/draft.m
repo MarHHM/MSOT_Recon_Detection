@@ -18,6 +18,8 @@ LVc = 0;
 RECON_ALL = false;
 recon_wMB(scan_path, nonNeg, LVc, RECON_ALL);
 
+% LVc = 1;
+% recon_wMB(scan_path, nonNeg, LVc, RECON_ALL);
 %% showing all wls at the first zpos
 for wl_idx = 1:length(datainfo.Wavelengths)
     figure, imagesc(Recon_MB(:,:,1,1,1,wl_idx)), title(['conv MB - wl = ' int2str(datainfo.Wavelengths(wl_idx))]), colormap(bone), colorbar, axis image off

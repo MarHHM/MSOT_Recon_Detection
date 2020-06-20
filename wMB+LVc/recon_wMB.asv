@@ -46,9 +46,9 @@ f_max = parent_convMB_recon.f_max;
 t_res = parent_convMB_recon.t_res;
 MB_regu = parent_convMB_recon.MB_regu;
 
-% nDet = datainfo.HWDesc.NumDetectors;
+% n_det = datainfo.HWDesc.n_det;
 % r_sensor = datainfo.HWDesc.Radius;
-nDet = 256;
+n_det = 256;
 r_sensor = 0.0405;
 T = parent_convMB_recon.datainfo.AverageTemperature;
 c = 12 + round(1.402385 * 1e3 + 5.038813 * T - 5.799136 * 1e-2 * T^2 + 3.287156 * 1e-4 * T^3 - 1.398845 * 1e-6 * T^4 + 2.787860 * 1e-9 * T^5 );
@@ -120,31 +120,32 @@ for zpos_idx = 1 : zpos_end-zpos_begin+1
                     
                     if LVc
                         %%% accessing specific detector signals causing probs
-                        
                         j_c = floor( t_undercompnsated_ratio * length(t) );
                         
-                        datainfo.HWDesc.StartAngle = -0.7762;
-                        datainfo.HWDesc.EndAngle = 3.9178;
-                        datainfo.HWDesc.NumDetectors = 256;
-                        datainfo.HWDesc.StepAngle = (datainfo.HWDesc.EndAngle - datainfo.HWDesc.StartAngle)/(datainfo.HWDesc.NumDetectors-1);
+                        % see ---.jpg 
+                        theta_start = -pi/4;            % start of detection ring (counting clock-wise !)
+                        total_detection_ring_coverage = 3*pi/2;         % inVision 256 coverage is 270 deg
+                        theta_end = theta_start + total_detection_ring_coverage;     % end of detection ring
+                        theta_step = (theta_end - theta_start)/(n_det);
                         
-                        detAngleBegin = pi/4;
-                        detAngleEnd = 3*pi/4;
-                        detIdxAtAngleBegin = floor((detAngleBegin-datainfo.HWDesc.StartAngle)/datainfo.HWDesc.StepAngle) + 1;
-                        detIdxAtAngleEnd = floor((detAngleEnd-datainfo.HWDesc.StartAngle)/datainfo.HWDesc.StepAngle) + 1;
+                        theta_1 = pi/2;             % start of detection part affected by Luis weighting method (partial D_u)
+                        theta_2 = pi;               % end of detection part affected by Luis weighting method
+                        det_idx_at_theta_1 = floor(theta_1/theta_step);
+                        det_idx_at_theta_2 = floor(theta_2/theta_step);
+                        
                         %             % detIdx = 256;
-                        %             %         detSigRangeCausingProb = sigMat_truncated(:,detIdxAtAngleBegin:detIdxAtAngleEnd,1,1,1,1);
+                        %             %         detSigRangeCausingProb = sigMat_truncated(:,det_idx_at_theta_1:det_idx_at_theta_2,1,1,1,1);
                         %             %         figure, plot(detSigRangeCausingProb);
                         %
                         %             %%% form spatio-temporal variant weight factor w (increasing weight at t_ij making undercompensation at pixels at upper part of im)
                         %             %           if strcmp( LIMITED_VIEW_CORRCTN, 'pixel reverse-weighting in Regularization') || strcmp(LIMITED_VIEW_CORRCTN, 'pixel reverse-normalization after recon' )
                         %             %             compnsFactor = 1;       % deactivates this correction
                         %             %           end
-                        %             wSpatiotemp_mat = w*ones(length(t),nDet);
-                        %             for i = 1:nDet
+                        %             wSpatiotemp_mat = w*ones(length(t),n_det);
+                        %             for i = 1:n_det
                         %               for j = 1:length(t)
                         %                 % if at underweighted zone
-                        %                 if (i >= detIdxAtAngleBegin) && (i <= detIdxAtAngleEnd) && (j > floor(t_undercompnsated_ratio*size(wSpatiotemp_mat,1)))
+                        %                 if (i >= det_idx_at_theta_1) && (i <= det_idx_at_theta_2) && (j > floor(t_undercompnsated_ratio*size(wSpatiotemp_mat,1)))
                         %                   %                     P_d(j,i) = compnsFactor*w;        % lower the penalization for bigger coverage at these transducers
                         %                   compGradient = (length(t)-j)/(length(t)*(1-t_undercompnsated_ratio));   % from 1 to 0 at the culprit part of the signal (starting at "t_undercompnsated_ratio*size(P_d,1)")
                         %                   wSpatiotemp_mat(j,i) = compnsFactor*w*compGradient;
@@ -158,8 +159,8 @@ for zpos_idx = 1 : zpos_end-zpos_begin+1
                     
                     
                     %%% form weighting matrix P_d(t_ij) as a col-major vector (probablity of direct propagation)(to be multiplied by the model matrix)
-                    P_d = zeros(1,nDet*length(t));
-                    for i = 1:nDet                                        % for each transducer i
+                    P_d = zeros(1,n_det*length(t));
+                    for i = 1:n_det                                        % for each transducer i
                         theta = angle_sensor(i);                             % angle of the transducer
 %                         x_sensor = r_sensor*cos(theta);                     % horizontal position of the transducer
 %                         y_sensor = r_sensor*sin(theta);                     % vertical position of the transducer
@@ -167,21 +168,16 @@ for zpos_idx = 1 : zpos_end-zpos_begin+1
                         % calculate the part of A covered by the current transducer for different time instants (A_ij for all t_j values for the current trans i)
                         A_ij = area_covered_detector_circle_distance( c, t, xc_A, yc_A, Rc_A, r_sensor, theta );
                         
-                        if LVc            % access detectors in red part (partial(D_u) in fig. 2a) & replace the latter part of A_ij(j) by the const A_ij(j_c) (i.e. fig. 2c)
-                            if (i >= detIdxAtAngleBegin) && (i <= detIdxAtAngleEnd)
-                                
-                                for j = 1:length(t)
-                                    if j > j_c
-                                        A_ij(j) = A_ij(j_c);
-                                    end
+                        if LVc && (i >= det_idx_at_theta_1) && (i <= det_idx_at_theta_2)  % access detectors in red part (partial(D_u) in fig. 2a) & replace the latter part of A_ij(j) by the const A_ij(j_c) (i.e. fig. 2c)
+                            for j = 1:length(t)
+                                if j > j_c
+                                    A_ij(j) = A_ij(j_c);
                                 end
-                                
-                                %%% TEST
-                                %                 if i == 128
-                                %                   figure, plot(t, A_ij), title('A_{ij} for a transducer in the red part after fixing A_{ij}(t_{j}) after j_c'), ylim([0 pi*Rc_A^2]);
-                                %                 end
-                                
                             end
+                            %%% TEST
+                            %                 if i == 128
+                            %                   figure, plot(t, A_ij), title('A_{ij} for a transducer in the red part after fixing A_{ij}(t_{j}) after j_c'), ylim([0 pi*Rc_A^2]);
+                            %                 end
                         end
                         
                         AreaNorm = A_ij / (pi*Rc_A^2);      % normalize A_ij to the area of the target (circle)
@@ -190,17 +186,17 @@ for zpos_idx = 1 : zpos_end-zpos_begin+1
                     end
                     
                     %%% TEST
-                    %           P_d_mat = reshape(P_d, [length(t) nDet]);
+                    %           P_d_mat = reshape(P_d, [length(t) n_det]);
                     %           figure, plot(t, P_d_mat(:,128)), ylim([0 1]), title('P_{d}(t_{ij}) for a transducer in the red part after fixing A_{ij}(t_{j}) after j_c');
                     %           figure, plot(t, P_d_mat(:,end)), ylim([0 1]), title('P_{d}(t_{ij}) for last transducer');
                     
-                    pos = linspace( 1, nDet*length(t), nDet*length(t) );
-                    W = sparse( pos, pos, P_d, nDet*length(t), nDet*length(t) );   % just putting P_d as a diagonal matrix
+                    pos = linspace( 1, n_det*length(t), n_det*length(t) );
+                    W = sparse( pos, pos, P_d, n_det*length(t), n_det*length(t) );   % just putting P_d as a diagonal matrix
                     
                     %%% weighting A_mat & b_vec
                     A_matW = W*A_mat;
                     
-                    b_vec_In = prepareMeasuredPressureVec( sigMat_current, ts, t, nDet );
+                    b_vec_In = prepareMeasuredPressureVec( sigMat_current, ts, t, n_det );
                     b_vecW = W*b_vec_In;
                     
                     %%% TEST
@@ -222,9 +218,9 @@ for zpos_idx = 1 : zpos_end-zpos_begin+1
                     %               ReconW(:, :, 1, zpos_idx, rep_idx, wl_idx) = reconstruction( A_matW, b_vecW, n, RECON_METHOD, MB_regu, IMPOSE_NONNEGATIVITY );
                     %
                     %             case 'pixel reverse-weighting in Regularization'      %%% [MHH] pixel reverse weightining for limited view case
-                    %               w_vec_mat = reshape(P_d', length(t), nDet);     % reshape to matrix to input to BP algo
+                    %               w_vec_mat = reshape(P_d', length(t), n_det);     % reshape to matrix to input to BP algo
                     %               % VIP: don't use "full" here as we don't need the derivatives for the pixel weighs reconstruction
-                    %               [w_vec_pixels, X, Y] = backproject_luis(w_vec_mat, n, datainfo.HWDesc.Radius, angle_sensor, c, 'direct', t, im_w, 0, 0);
+                    %               [w_vec_pixels, X, Y] = backproject_luis(w_vec_mat, n, Radius, angle_sensor, c, 'direct', t, im_w, 0, 0);
                     %               figure, imagesc(w_vec_pixels), title('reconstructed pixel weights (using BP)'), colormap(bone), axis image off;
                     %               w_vec_pixels_colMajor = reshape(w_vec_pixels, n*n,1);     % reshape back to vector
                     %               w_vec_pixels_colMajor = w_vec_pixels_colMajor + 1;      % to avoid division by zero in the next command
@@ -236,8 +232,8 @@ for zpos_idx = 1 : zpos_end-zpos_begin+1
                     %               % ReconW = reconstruction(A_matW, b_vecW, n, RECON_METHOD, reguForLuisMthd, IMPOSE_NONNEGATIVITY);
                     %             case 'pixel reverse-normalization after recon'
                     %               disp('!! conceptually wrong as the signal in the distorted upper part is already lost after the recon!!');
-                    %               %                 w_vec_mat = reshape(P_d', length(t), nDet);     % reshape to matrix to input to BP algo
-                    %               %                 [w_vec_pixels, X, Y] = backproject_luis(w_vec_mat, n, datainfo.HWDesc.Radius, angle_sensor, c, 'full', t, datainfo.HWDesc.SamplingFrequency, im_w, 0, 0);
+                    %               %                 w_vec_mat = reshape(P_d', length(t), n_det);     % reshape to matrix to input to BP algo
+                    %               %                 [w_vec_pixels, X, Y] = backproject_luis(w_vec_mat, n, Radius, angle_sensor, c, 'full', t, SamplingFrequency, im_w, 0, 0);
                     %               %                 w_vec_pixels = w_vec_pixels + 1;      % to avoid div by zero
                     %               %
                     %               %                 %%% Inversion then normalization by pixel weights
@@ -326,14 +322,14 @@ if SAVE_RECON
     end
     reconStruct__fname = strcat( scan_path, '\recons\', LUIS_WEIGHT_METHOD, ' - nonNeg_', num2str(nonNeg), '-zpos_',...
                                 num2str(zpos_end-zpos_begin+1), '-reps_', num2str(rep_end-rep_begin+1), '-wls_', num2str(wl_end-wl_begin+1),...
-                                '-reconRes_', num2str(parent_convMB_recon.reconRes), '-imW_', num2str(im_w) , '-w_', num2str(w),'-LVc_', num2str(LVc), '.mat');
+                                '-reconRes_', num2str(reconRes), '-imW_', num2str(im_w) , '-w_', num2str(w),'-LVc_', num2str(LVc), '.mat');
     if exist(reconStruct__fname, 'file')                % to avoid overwriting an existing recon
        [filepath, name, ext] = fileparts(reconStruct__fname);
         reconStruct__fname = [filepath '/' name '__' ext];
     end
 %     note = 'sigMat_truncated attached with this recon is laser-energy corrected & filtered';
-    save(reconStruct__fname, 'ReconW', 'sigMat_truncated', 'parent_convMB_recon.datainfo', 'im_w', 'parent_convMB_recon.reconRes', 'parent_convMB_recon.f_min', 'parent_convMB_recon.f_max', 'parent_convMB_recon.t_res', 'parent_convMB_recon.MB_regu',...
-        'zpos_begin', 'zpos_end', 'wl_begin', 'wl_end', 'rep_begin', 'rep_end', 'parent_convMB_recon.nonNeg', 'LVc', 'P_r', '-v7.3' );
+    save(reconStruct__fname, 'ReconW', 'sigMat_truncated', 'datainfo', 'im_w', 'reconRes', 'f_min', 'f_max', 't_res', 'MB_regu',...
+        'zpos_begin', 'zpos_end', 'wl_begin', 'wl_end', 'rep_begin', 'rep_end', 'nonNeg', 'LVc', 'P_r', '-v7.3' );
     disp('-> Reconstruction saved to disk.');
     
 end
