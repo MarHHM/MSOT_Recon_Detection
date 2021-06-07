@@ -1,4 +1,6 @@
-function [spectra] = LoadSpectra(data_path, wavelengths) 
+function [spectra] = LoadSpectra(data_path, wavelengths)
+% - spectra -> n*l matrix (n: number of agents + oxy + deoxy - l: len(wavelengths))
+% - generated spectra are spline-interpolation of the full spectra (coming from spectrometer) for the acquisition wavelengths 
 
 keep_path = pwd;
 
@@ -19,7 +21,7 @@ end
     
  spectra = ones(Nb_spectra,nb_wavelengths);
  k=1;
- %load all the agents in the folder
+ %load all the agents (row-by-row) first in the folder
  for i=1:size(generaldirectory1,1)
      load(generaldirectory1(i).name);
      var = eval(generaldirectory1(i).name(7:end-4));
@@ -27,7 +29,7 @@ end
      k=k+1;
  end
   
- %Load oxy - deoxy
+ %then Load oxy - deoxy
  if size(generaldirectory2,1)
         load(generaldirectory2(1).name);
         

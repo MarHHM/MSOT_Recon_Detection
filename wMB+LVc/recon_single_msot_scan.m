@@ -6,7 +6,7 @@ function recon_single_msot_scan(scan_path, IMPOSE_NONNEGATIVITY, RECON_ALL)
 %     - if mouse data, 800nm is the important wl to show (isosbestic, best total blood signal)
 
 %% PATHS & PARAMS
-% addReconPaths;        % no need, it's in the startup.m
+MB_MAT__path = 'C:\PA_local\MB_matrices';
 im_w = 30e-3;                % physical im width at acquisition (m) - org: 25e-3
 reconRes = 75e-6;                  % resolution of reconstruction (m/pixel) (org: 100 - preferred at 100 or 75 um)
 RECON_METHOD = 'MB_Tik';        % 'BP'  'MB_Tik'  'MB_TVL1'
@@ -14,9 +14,8 @@ SAVE_RECON = true;
 
 
 %% %%%%%%%%%%%%%%%%%% MAIN %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-disp(['---------------- Recontructing scan : ' scan_path ' ----------------']);
+disp(['---------------- Recontructing scan : ' scan_path ' - nonneg = ' num2str(IMPOSE_NONNEGATIVITY) '----------------']);
 
-MB_MAT_FOLDER = 'S:\MB_matrices';
 f_min = 0.04e6;             % typically 0.04 (for unmixing, better 0.25) to 8 MHz
 f_max = 8e6;
 t_res = 2;                  % time resolution for model-based (bigger -> finer res but bigger A & more recon time) (originally 2)
@@ -86,7 +85,7 @@ if strcmp(RECON_METHOD,'MB_Tik')||strcmp(RECON_METHOD,'MB_TVL1')
 %     sizeT = length(t);
     
     % check for model matrix if saved, otherwise build & save it
-    A_matPath = [MB_MAT_FOLDER '\A_mat_t_res_' num2str(t_res) '_' num2str(n) 'x' num2str(n) '_width_' num2str(im_w*1e3)...
+    A_matPath = [MB_MAT__path '\A_mat_t_res_' num2str(t_res) '_' num2str(n) 'x' num2str(n) '_width_' num2str(im_w*1e3)...
         '_c_' num2str(c) '_nDet_' num2str(length(angle_sensor)) '_t_' num2str(length(t)) '.mat'];
     A_mat = compOrLoadA_mat( A_matPath, c, n, im_w, t, datainfo.HWDesc.Radius, angle_sensor, n_angles );
 end
@@ -131,22 +130,28 @@ for run_idx = 1:1
 end
 
 if SAVE_RECON
-    % note = 'sigMat_truncated attached with this recon is laser-energy corrected & filtered';
     if ~exist([scan_path '\recons'], 'dir')
         mkdir([scan_path '\recons'])
     end
-    reconStruct__fname = strcat(scan_path, '\recons\', RECON_METHOD, ' - nonNeg_', num2str(IMPOSE_NONNEGATIVITY), '-zpos_',...
-                                num2str(zpos_end-zpos_begin+1),'-reps_', num2str(rep_end-rep_begin+1), '-wls_', num2str(wl_end-wl_begin+1),...
-                                '-reconRes_', num2str(reconRes),'-imW_', num2str(im_w) ,'.mat');
-    if exist(reconStruct__fname, 'file')                % to avoid overwriting an existing recon
-       [filepath, name, ext] = fileparts(reconStruct__fname);
-        reconStruct__fname = [filepath '/' name '__' ext];
+    reconStruct__fName = strcat(RECON_METHOD, ' - nonNeg_', num2str(IMPOSE_NONNEGATIVITY), '-zpos_',num2str(zpos_end-zpos_begin+1),...
+                                '-reps_', num2str(rep_end-rep_begin+1), '-wls_', num2str(wl_end-wl_begin+1),'-reconRes_', num2str(reconRes),...
+                                '-imW_', num2str(im_w));
+    if exist([scan_path '\recons' '\' reconStruct__fName], 'dir')                % to avoid overwriting an existing recon
+        reconStruct__fName = [reconStruct__fName '__'];
     end
-    save(reconStruct__fname,'scan_path', 'RECON_METHOD', 'Recon_MB', 'sigMat_truncated', 'datainfo', 'im_w', 'reconRes', 'n', 'f_min', 'f_max',...
-                            't_res', 'ts', 't', 'angle_sensor','MB_regu', 'run_idx', 'zpos_begin', 'zpos_end', 'wl_begin', 'wl_end', 'rep_begin',...
-                            'rep_end', 'IMPOSE_NONNEGATIVITY', 'A_matPath', '-v7.3');
-    disp('-> Reconstruction saved to disk.');
+    reconStruct__path = [scan_path '\recons' '\' reconStruct__fName];
+    mkdir(reconStruct__path);
+    save([reconStruct__path '\' reconStruct__fName '.mat'],...
+         'scan_path', 'RECON_METHOD', 'Recon_MB', 'sigMat_truncated', 'datainfo', 'im_w', 'reconRes', 'n', 'f_min', 'f_max','t_res', 'ts', 't',...
+         'angle_sensor','MB_regu', 'run_idx', 'zpos_begin', 'zpos_end', 'wl_begin', 'wl_end', 'rep_begin', 'rep_end', 'IMPOSE_NONNEGATIVITY',...
+         'A_matPath', '-v7.3');       % sigMat_truncated attached with this recon is laser-energy corrected & filtered
+    disp(['-> Reconstruction saved to ' reconStruct__path]);
     
+    % save a representative image (for ease of browsing later)
+    rprsnttv_im = Recon_MB(:,:,1,1,1,1);
+    figure, imagesc(rprsnttv_im),...
+        title(['recon: ' reconStruct__fName ' (rprsnttv_im)'], 'Interpreter', 'none'), colormap(bone), colorbar, axis image off;
+    export_fig([reconStruct__path '\' reconStruct__fName '.png'], '-nocrop');
 end
 
 end

@@ -10,3 +10,4 @@ else
     A_mat = Calculate_MatrixMB_Luis(c, n, image_width, t, radius, angle_sensor, n_angles);
     save(A_matPath, 'A_mat', '-v7.3');
 end
+disp_last_line("done.");
