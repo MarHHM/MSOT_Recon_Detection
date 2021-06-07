@@ -49,7 +49,7 @@ RECON_ALL = false;
 recon_wMB(scan_path, nonNeg, LVc, RECON_ALL);
 
 % LVc = 1;
-% recon_wMB(scan_path, nonNeg, LVc, RECON_ALL);
+% recon_wMB(scan_path, nonNeg, LVc, RECON_ALL); 
 %% showing all wls @ certain zpos
 disp('------------ Script "showing all wls @ certain zpos" ------------');
 % close all;
