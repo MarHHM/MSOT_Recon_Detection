@@ -1,20 +1,21 @@
-function spectralAnalysis(recon_path, RECON_TYPE, z_pos__idx)
+function spectralAnalysis(recon_path, RECON_TYPE, z_pos__idx, MSOT_Recon_Detection__path)
 %%% NOTES
-% - STILL TO DO: this will work for only 1 agent (+deoxy+oxy) - generalize to any number of agents (i.e. generalize     [agent_map(i,j) = coeffs(1);])
+% - STILL TO DO: this will work for only 1 exogenous agent (+deoxy+oxy) - generalize to any number of agents (i.e. generalize     [agent_map(i,j) = coeffs(1);])
 % - choose ur datacube for which u will do the unmixing
 % - the datacube DATA should be arranged as a 3D array of (y,x,wls)
 % - ask the source of the dataset if any agents were used (for the [spectraPath] choice)
 
 %% PATHS & PARAMS
-SHIFT_RECONS = true;       % to avoid neg values (make min = 0) - should be true if negatives were allowed during the reconstruction - 
-                            % has no effect if the recon is non-neg
+agent = "AF750";     % iRFP || AF750 || iCG
+SHIFT_RECONS = true;       % to avoid neg values (make min = 0) - should be true if negatives were allowed during the reconstruction -
+% has no effect if the recon is non-neg
 
-                            
+
 %%%%%%%%%%%%%%%%%%%%%%%% MAIN %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 %% choose input data cube (between convMB or ReconW)
+disp("-------------- Unmixing "+recon_path+" --------------");
 switch RECON_TYPE
-  case 'MB_Tik'
+  case 'MB_Tik'                             
     load(recon_path, 'Recon_MB', 'datainfo');
     data_cube = squeeze(Recon_MB(:,:,:,z_pos__idx,:,:));   % if [Recon_MB] is 6D
   case 'wMB'
@@ -22,10 +23,11 @@ switch RECON_TYPE
     data_cube = squeeze(ReconW(:,:,:,z_pos__idx,:,:));
 end
 
-%% load the spectra
-spectraPath = 'C:\Users\bzfmuham\OneDrive\PA_imaging\wMB+LVc\MSOT_Recon_Detection\spectra\SpectralSpecifications_iRFP';  % \SpectralSpecifications_iRFP || \SpectralSpecifications_AF750 || \SpectralSpecifications_iCG
+%% load the spectra (N.B. LoadSpectra() doesn't load any endogenous chromohpores other than oxy & deoxy blood)
+disp(("Choosen agent for unmixing: "+agent));
+spectraPath = MSOT_Recon_Detection__path + "\spectra\SpectralSpecifications_" + agent;
 wavelengths = datainfo.Wavelengths;
-spectra = LoadSpectra(spectraPath, wavelengths);  % n*l matrix (n: number of agents + oxy + deoxy - l: len(wavelengths))
+spectra = LoadSpectra(spectraPath, wavelengths);    % n*l matrix (n: number of agents + oxy + deoxy - l: len(wavelengths))
 n_spectra = size(spectra,1);
 % water = datainfo.MeasurementDesc.WaterAbsorptionCoeff;
 % a = 18.2; b = 0.6;
@@ -92,13 +94,14 @@ for i=1:size(data_cube__no_NIR,1)
 end
 
 %%% plot unmixed spectral maps
-figure; imagesc(agent_map); axis image off; colorbar; colormap jet; title(['agent map - RECON_ TYPE = ' num2str(RECON_TYPE)]);
+[~, recon_name, ~] = fileparts(recon_path);
+figure; imagesc(agent_map);
+title((agent+" map for Recon '"+recon_name+"'"), 'Interpreter', 'None'), colormap jet; colorbar, axis image off;
 % figure; imagesc(agent_map); axis image off; colorbar; colormap jet; title(['agent map - nonNeg=' num2str(IMPOSE_NONNEGATIVITY)...
 %                                                                            ' - SHIFT_ RECONS=' num2str(SHIFT_RECONS) '']);
 % figure; imagesc(deoxy_map); axis image off; colorbar; title('deoxy');
 % figure; imagesc(oxy_map); axis image off; colorbar; title('oxy');
 % figure; imagesc(so2_map); axis image off; colorbar; colormap jet; title('sO2');
-
 
 %% overlay spectral maps over recon (wl 800nm) (i.e. anatomy)
 % VIP: here, colorbars are not meaningful yet!!
@@ -111,21 +114,21 @@ figure; imagesc(agent_map); axis image off; colorbar; colormap jet; title(['agen
 % % map = [ [0.0, 0.05, 0.1, 0.15, 0.2, 1.0]', zeros(6,1), zeros(6,1)];
 % colorMap_oxy = autumn(64);
 % colorMap_oxy = colorMap_oxy(end:-1:1,:);
-% 
+%
 % oxy_ovr = overlay_multipurpose(oxy_map_to_overl, anatomy, anatomy, mask_oxy, colorMap_oxy);
 % % figure; imagesc(oxy_ovr); axis image off; title('oxy overlayed'), colormap(colorMap_oxy), colorbar;
-% 
-% 
+%
+%
 % mask_deoxy = zeros(size(deoxy_map));
 % mask_deoxy(deoxy_map > 0) =1;
 % deoxy_map_to_overl = ( deoxy_map - min(deoxy_map(:)) )./max( deoxy_map(:) - min(deoxy_map(:)) );
 % colorMap_deoxy = winter(64);
 % colorMap_deoxy = colorMap_deoxy(end:-1:1,:);
-% 
+%
 % deoxy_ovr = overlay_multipurpose(deoxy_map_to_overl, anatomy, anatomy, mask_deoxy, colorMap_deoxy);
 % % figure; imagesc(deoxy_ovr); axis image off; title('deoxy overlayed'), colormap(colorMap_deoxy),colorbar;
-% 
-% 
+%
+%
 % %%% Overlay sO2
 % mask_so2 = zeros(size(so2_map));
 % mask_so2(so2_map >= 0) = 1;
@@ -134,25 +137,25 @@ figure; imagesc(agent_map); axis image off; colorbar; colormap jet; title(['agen
 % % show half of the 'colorMap_sO2' colorbar
 % colorBar_sO2 = colorMap_sO2;
 % colorBar_sO2 = colorBar_sO2(size(colorBar_sO2,1)/2:end,:);
-% 
+%
 % so2_ovr = overlay_multipurpose(so2_map_to_overl, anatomy, anatomy, mask_so2, colorMap_sO2);
 % %%% BAD for the DR of the colormap (the ROI is better!!)
 % figure; imagesc(so2_ovr); axis image off; title('sO2 overlayed'), colormap(colorBar_sO2), colorbar;
-% 
+%
 % %%% try showing only small ROI to have better DR of the colormap
 % % figure; imagesc(so2_ovr(115:193,47:101)); axis image off; title('sO2 overlayed'), colormap(colorBar_sO2), colorbar;   %% reflection ROI
-% 
+%
 % %%% TRIAL : show only sO2 for an ROI (NOT WORKING TILL NOW!!)
 % % mask = roipoly;
 % % masked = so2_map.*mask;
 % % so2_ovr_masked = overlay_multipurpose(masked, anatomy, anatomy, mask_so2, colorMap_sO2);
 % % figure; imagesc(so2_ovr_masked); axis image off; title('sO2 overlayed'), colormap(colorBar_sO2), colorbar;
-% 
-% 
+%
+%
 % % so2_ovr = overlay(so2_map_to_overl, anatomy, anatomy, mask_so2);
 % % figure; imagesc(so2_ovr); axis image off; title('sO2 overlayed');
-% 
-% 
+%
+%
 % % figure; imagesc(res_map); colormap jet; axis image off; colorbar
 
 %% plot spectrum of single pixel
@@ -175,4 +178,6 @@ figure; imagesc(agent_map); axis image off; colorbar; colormap jet; title(['agen
 %     close(g);
 %     figure(f);
 %
-% end
+
+%%
+end

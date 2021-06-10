@@ -110,9 +110,9 @@ end
 
 %% Unmix several scans & recons
 disp('------------ Script "Unmix several scans & recons" ------------');
-dataset_path = datasets__path+"\MSOT 256\Qutaiba phantom";
-scan_names = ["Scan_8";];
-z_pos__idx = 8;
+dataset_path = datasets__path+"\MSOT 256\Marwan\(2017-03-03) testing phantom ink+straw";    % Marwan\(2017-03-03) testing phantom ink+straw\Scan_16 || Qutaiba\phantom_2
+scan_names = ["Scan_16";];
+z_pos__idx = 1;
 % recons_to_unmix = ["Scan_8";];
 % nonNeg = [0;];
 % LVc = [1];
@@ -121,12 +121,12 @@ z_pos__idx = 8;
 %     for k = 1:length(LVc)
 %       for l = 1:length(shift)
         %             disp([[dataset_path "\" scan_names(i,:)] int2str(nonNeg(j))  int2str(LVc(k))])
-spectralAnalysis([dataset_path "\" scan_names "\recons\MB_Tik - nonNeg_0-zpos_8-reps_1-wls_13-reconRes_7.5e-05-imW_0.03.mat"],...
-                  "MB_Tik", z_pos__idx);
-spectralAnalysis([dataset_path "\" scan_names "\recons\wMB - nonNeg_0-zpos_8-reps_1-wls_13-reconRes_7.5e-05-imW_0.03-w_1-LVc_0.mat"],...
-                  "wMB", z_pos__idx);
-spectralAnalysis([dataset_path "\" scan_names "\recons\wMB - nonNeg_0-zpos_8-reps_1-wls_13-reconRes_7.5e-05-imW_0.03-w_1-LVc_1.mat"],...
-                  "wMB", z_pos__idx);
+spectralAnalysis((dataset_path+"\"+scan_names+"\recons\MB_Tik - nonNeg_0-zpos_1-reps_1-wls_8-reconRes_7.5e-05-imW_0.025.mat"),...
+                  "MB_Tik", z_pos__idx, MSOT_Recon_Detection__path);
+% spectralAnalysis([dataset_path "\" scan_names "\recons\wMB - nonNeg_0-zpos_8-reps_1-wls_13-reconRes_7.5e-05-imW_0.03-w_1-LVc_0.mat"],...
+%                   "wMB", z_pos__idx);
+% spectralAnalysis([dataset_path "\" scan_names "\recons\wMB - nonNeg_0-zpos_8-reps_1-wls_13-reconRes_7.5e-05-imW_0.03-w_1-LVc_1.mat"],...
+%                   "wMB", z_pos__idx);
 %       end
 %     end
 %   end

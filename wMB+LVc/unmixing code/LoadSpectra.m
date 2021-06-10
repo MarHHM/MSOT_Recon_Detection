@@ -1,10 +1,11 @@
-function [spectra] = LoadSpectra(data_path, wavelengths)
+function [spectra] = LoadSpectra(spectra_path, wavelengths)
+% - VIP: this function doesn't load any endogenous chromohpores spectra other than oxy & deoxy blood (even if the spectrum file of this chromohpore exists in the spectra_path)
 % - spectra -> n*l matrix (n: number of agents + oxy + deoxy - l: len(wavelengths))
 % - generated spectra are spline-interpolation of the full spectra (coming from spectrometer) for the acquisition wavelengths 
 
 keep_path = pwd;
 
-cd(data_path);
+cd(spectra_path);
 if (nargin<2)
     load('wavelengths.mat');
 end
