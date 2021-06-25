@@ -22,7 +22,7 @@ function varargout = testGui(varargin)
 
 % Edit the above text to modify the response to help testGui
 
-% Last Modified by GUIDE v2.5 01-Jul-2016 16:18:01
+% Last Modified by GUIDE v2.5 25-Jun-2021 18:39:47
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -381,12 +381,12 @@ function radiobutton2_Callback(hObject, eventdata, handles)
 
 
 % --- Executes on button press in pushbutton_LoadRecon.
-function pushbutton_LoadRecon_Callback(hObject, eventdata, handles)
+function pushbutton_LoadRecon_Callback(hObject, ~, handles)
 % hObject    handle to pushbutton_LoadRecon (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-[FileNameRecon,PathNameRecon,FilterIndexRecon] = uigetfile({'*.mat';'*.msot'});     %.mat->load recon || .msot->load raw acquisition data
+[FileNameRecon,PathNameRecon,~] = uigetfile({'*.mat';'*.msot'});     %.mat->load recon || .msot->load raw acquisition data
 
 if FileNameRecon
 
@@ -624,7 +624,7 @@ if FileNameSpec
 end
 
 % --- Executes on button press in pushbuttonAnalyze.
-function pushbuttonAnalyze_Callback(hObject, eventdata, handles)
+function pushbuttonAnalyze_Callback(hObject, ~, handles)
 % hObject    handle to pushbuttonAnalyze (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -733,7 +733,7 @@ for slice=1:size(handles.Recon,3)
 
     switch vis
         case 1
-            umx = umx;
+%             umx = umx;
         case 2
             umx = sqrt(umx);
         case 3
@@ -784,20 +784,19 @@ function pushbutton6_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-algorithm = get(handles.popupmenu1,'value')
-thresh = get(handles.popupmenu4,'value')
-vis = get(handles.popupmenu3,'value')
-spec = get(handles.popupmenu2,'value')
-algorithm
+algorithm = get(handles.popupmenu1,'value');
+thresh = get(handles.popupmenu4,'value');
+vis = get(handles.popupmenu3,'value');
+% spec = get(handles.popupmenu2,'value');
 switch algorithm
     case 2
         method = 'Simple';
     case 1
         method = 'AMF_QLShr';
     case 3
-        method = 'RSDF'
+        method = 'RSDF';
     case 4
-        method = 'OSP'
+        method = 'OSP';
 end
 
 init_folder_name = uigetdir();
@@ -1064,5 +1063,3 @@ function lb_recon_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-% loading Study

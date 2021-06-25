@@ -136,6 +136,9 @@ switch method
         [x, mixedmean] = remmean(x);
         psi1 = n1*n2; psi2 = 0;
 
+        addpath('D:\Users\stratis.tzoumas\Documents\MATLAB\Robust_AMF_27_10_2015\Covariance_metrics\');
+        addpath('D:\Users\stratis.tzoumas\Documents\MATLAB\Robust_AMF_27_10_2015\StatisticalCharacterization\');       
+     
         %Quasi local estimator of covariance matrix
         G_init = cov(x');
         [V D] = eig(K); %K=V*D*V'
