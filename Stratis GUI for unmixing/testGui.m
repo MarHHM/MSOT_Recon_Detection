@@ -54,12 +54,12 @@ function testGui_OpeningFcn(hObject, eventdata, handles, varargin)
 
 % re-name
 clc;
-javaaddpath MSOTBeans\msotbeans.jar
-javaaddpath java_class\recon.jar                   
-javaaddpath java_class\patbeans.jar                
-javaaddpath java_class\xmlbeans-2.5.0\lib\xbean.jar
+% javaaddpath MSOTBeans\msotbeans.jar
+% javaaddpath java_class\recon.jar                   
+% javaaddpath java_class\patbeans.jar                
+% javaaddpath java_class\xmlbeans-2.5.0\lib\xbean.jar
     
-set(handles.figure1, 'Name', 'MSOT Molecular Target Detection');
+set(handles.figure1, 'Name', 'MSOT Molecular Target Detection (Stratis GUI)');
 
 % Choose default command line output for testGui
 handles.output = hObject;
@@ -138,7 +138,7 @@ if sum(strcmp(fieldnames(handles), 'Analysis')) == 0
     imagesc(R(:,:)); colormap('gray'); axis off; axis equal;
 else
     axes(handles.axes1);
-    image(uint8(255*squeeze(handles.Analysis(:,:,:,handles.CurrRep,handles.CurrSlice)))); axis off; axis equal;
+    image(uint8(255*squeeze(handles.Analysis(:,:,:,handles.CurrSlice)))); axis off; axis equal;
 end
 
 % --- Executes during object creation, after setting all properties.
@@ -292,7 +292,6 @@ function popupmenu2_Callback(hObject, eventdata, handles)
 %        contents{get(hObject,'Value')} returns selected item from popupmenu2
 % Get value of popup
 selectedIndex = get(handles.popupmenu2, 'value');
-disp(selectedIndex)
 % Take action based upon selection
 if selectedIndex  == 1 & sum(strcmp(fieldnames(handles), 'spectra')) == 0
     set(handles.pushbuttonAnalyze,'enable','off');
@@ -300,38 +299,39 @@ elseif sum(strcmp(fieldnames(handles), 'datainfo')) == 0
     warndlg('Please load MSOT data before providing spectra','Warning!');
     set(handles.popupmenu2,'value',1);
 else
+    stratis_spectra_folder = 'C:\Users\ibn_a\OneDrive\PA_imaging\wMB+LVc\MSOT_Recon_Detection\Stratis GUI for unmixing\spectra';
     switch selectedIndex
          %ICG
         case 2 
-            folder_name = 'spectra\SpectralSpecifications_iCG';
-            handles.spectra = LoadSpectra(folder_name,handles.datainfo.Wavelengths)
+            folder_name = [stratis_spectra_folder '\SpectralSpecifications_iCG'];
+            handles.spectra = LoadSpectra(folder_name,handles.datainfo.Wavelengths);
             guidata(hObject, handles);
          %Alexa 750
         case 3
-            folder_name = 'spectra\SpectralSpecifications_AF750';
-            handles.spectra = LoadSpectra(folder_name,handles.datainfo.Wavelengths)
+            folder_name = [stratis_spectra_folder '\SpectralSpecifications_AF750'];
+            handles.spectra = LoadSpectra(folder_name,handles.datainfo.Wavelengths);
             guidata(hObject, handles);
          %Alexa 790
         case 4
-            folder_name = 'spectra\SpectralSpecifications_AF790';
-            handles.spectra = LoadSpectra(folder_name,handles.datainfo.Wavelengths)
+            folder_name = [stratis_spectra_folder '\SpectralSpecifications_AF790'];
+            handles.spectra = LoadSpectra(folder_name,handles.datainfo.Wavelengths);
             guidata(hObject, handles);
          %IntSense
         case 5
-            folder_name = 'spectra\SpectralSpecifications_IntSense';
-            handles.spectra = LoadSpectra(folder_name,handles.datainfo.Wavelengths)
+            folder_name = [stratis_spectra_folder '\SpectralSpecifications_IntSense'];
+            handles.spectra = LoadSpectra(folder_name,handles.datainfo.Wavelengths);
             guidata(hObject, handles);
         case 6
-            folder_name = 'spectra\Spectral_Specifications_DiR';
-            handles.spectra = LoadSpectra(folder_name,handles.datainfo.Wavelengths)
+            folder_name = [stratis_spectra_folder '\Spectral_Specifications_DiR'];
+            handles.spectra = LoadSpectra(folder_name,handles.datainfo.Wavelengths);
             guidata(hObject, handles);
         case 7
-            folder_name = 'spectra\Spectral specifications Pigment';
-            handles.spectra = LoadSpectra(folder_name,handles.datainfo.Wavelengths)
+            folder_name = [stratis_spectra_folder '\Spectral specifications Pigment'];
+            handles.spectra = LoadSpectra(folder_name,handles.datainfo.Wavelengths);
             guidata(hObject, handles);
         case 8
-            folder_name = 'spectra\SpectralSpecifications_iRFP';
-            handles.spectra = LoadSpectra(folder_name,handles.datainfo.Wavelengths)
+            folder_name = [stratis_spectra_folder '\SpectralSpecifications_iRFP'];
+            handles.spectra = LoadSpectra(folder_name,handles.datainfo.Wavelengths);
             guidata(hObject, handles);
     end
     set(handles.pushbuttonAnalyze,'enable','on');
@@ -390,10 +390,10 @@ function pushbutton_LoadRecon_Callback(hObject, eventdata, handles)
 
 if FileNameRecon
 
-    javaaddpath MSOTBeans\msotbeans.jar
-    javaaddpath java_class\recon.jar                   
-    javaaddpath java_class\patbeans.jar                
-    javaaddpath java_class\xmlbeans-2.5.0\lib\xbean.jar
+%     javaaddpath MSOTBeans\msotbeans.jar
+%     javaaddpath java_class\recon.jar                   
+%     javaaddpath java_class\patbeans.jar                
+%     javaaddpath java_class\xmlbeans-2.5.0\lib\xbean.jar
 
     if FileNameRecon(end-3:end) == 'msot'           % loading raw acquisition data
         
@@ -521,17 +521,17 @@ if FileNameRecon
     if any(strcmp('Analysis',fieldnames(handles)))
         handles = rmfield(handles,'Analysis');
 %     delete(handles.Analysis);
-        disp('remove handles')
+        % disp('remove handles')
     end
     
     if any(strcmp('Unmixed',fieldnames(handles)))
         handles = rmfield(handles,'Unmixed');
-        disp('remove handles')
+        % disp('remove handles')
     end
     
     if any(strcmp('spectra',fieldnames(handles)))
         handles = rmfield(handles,'spectra');
-        disp('remove handles')
+        % disp('remove handles')
     end
 
     set(handles.text9,'String',handles.datainfo.Name);
@@ -721,39 +721,36 @@ else
     covAll = [];
 end
 set(handles.text10,'String','Processing...');
-for run=1:size(handles.Recon,3)
-    for slice=1:size(handles.Recon,4)
-        R = squeeze(handles.Recon(:,:,run,slice,1,:));
-        HM(:,:,1,:) = R;
-        mixed = permute(HM,[4,3,1,2]);
-        [umx, ~, flag, message] = unmix(mixed, handles.datainfo.Wavelengths, handles.spectra, method, cov_gl, covAll, thresh, size(mixed,3),size(mixed,4));
-        if flag == 0
-            warndlg(message);
-            return;
-        end
-        
-        switch vis
-            case 1
-                umx = umx;
-            case 2
-                umx = sqrt(umx);
-            case 3
-                umx = sqrt(sqrt(umx));
-        end
-        if max(umx(:)>0)
-            umx = umx./max(umx(:));
-        end
-        handles.Unmixed(:,:,run,slice) = squeeze(umx);
-        im = R(:,:,handles.CurrWav);
-        Analysis(:,:,:,run,slice) = ImOverlayR(im,squeeze(umx),1,'test'); close;
+for slice=1:size(handles.Recon,3)
+    R = squeeze(handles.Recon(:,:,slice,:));
+    HM(:,:,1,:) = R;
+    mixed = permute(HM,[4,3,1,2]);
+    [umx, ~, flag, message] = unmix(mixed, handles.datainfo.Wavelengths, handles.spectra, method, cov_gl, covAll, thresh, size(mixed,3),size(mixed,4));
+    if flag == 0
+        warndlg(message);
+        return;
     end
+
+    switch vis
+        case 1
+            umx = umx;
+        case 2
+            umx = sqrt(umx);
+        case 3
+            umx = sqrt(sqrt(umx));
+    end
+    if max(umx(:)>0)
+        umx = umx./max(umx(:));
+    end
+    handles.Unmixed(:,:,slice) = squeeze(umx);
+    im = R(:,:,handles.CurrWav);
+    Analysis(:,:,:,slice) = ImOverlayR(im,squeeze(umx),1,'test'); close;
 end
 set(handles.text10,'String','Ready');
     % [umx_rsdf_ecglrt, A] = unmix_AMF_all(mixed, handles.datainfo.Wavelengths, handles.spectra, method, cov_gl,1,[],[],[]);
 handles.Analysis = Analysis;
-curr_slice = get(handles.listbox1,'value');
 axes(handles.axes1);
-image(uint8(255*squeeze(handles.Analysis(:,:,:,handles.CurrRep,handles.CurrSlice)))); axis off; axis equal;
+image(uint8(255*squeeze(handles.Analysis(:,:,:,handles.CurrSlice)))); axis off; axis equal;
 guidata(hObject, handles);
 set(handles.pushbutton6,'enable','on');
 
@@ -934,7 +931,7 @@ if (curX > min(xLimits) && curX < max(xLimits) && curY > min(yLimits) && curY < 
         handles.y_int = round(curY);
     end
 else
-    disp('Cursor is outside bounds of image.');
+%     disp('Cursor is outside bounds of image.');
 end
 guidata(src, handles);
 
@@ -1035,17 +1032,17 @@ if handles.reconNodes >1;
     if any(strcmp('Analysis',fieldnames(handles)))
     handles = rmfield(handles,'Analysis');
     %     delete(handles.Analysis);
-    disp('remove handles')
+    % disp('remove handles')
     end
 
     if any(strcmp('Unmixed',fieldnames(handles)))
     handles = rmfield(handles,'Unmixed');
-    disp('remove handles')
+    % disp('remove handles')
     end
 
     if any(strcmp('spectra',fieldnames(handles)))
     handles = rmfield(handles,'spectra');
-    disp('remove handles')
+    % disp('remove handles')
     end
 
     set(handles.text9,'String',handles.datainfo.Name);
