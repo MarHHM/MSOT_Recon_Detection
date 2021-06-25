@@ -628,10 +628,10 @@ function pushbuttonAnalyze_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbuttonAnalyze (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-algorithm = get(handles.popupmenu1,'value')
-thresh_sel = get(handles.popupmenu4,'value')
-vis = get(handles.popupmenu3,'value')
-spec = get(handles.popupmenu2,'value')
+algorithm = get(handles.popupmenu1,'value');
+thresh_sel = get(handles.popupmenu4,'value');
+vis = get(handles.popupmenu3,'value');
+% spec = get(handles.popupmenu2,'value');
 
 switch algorithm
     case 2
@@ -686,9 +686,9 @@ end
 % thresh
 % algorithm
 %Check if the required wavelengths are available for RSDF
-if algorithm == 1 | algorithm == 3
+if algorithm == 1 || algorithm == 3
     req_wav  =700:1:900;
-    flag_wav=1;
+%     flag_wav=1;
     w_subset = intersect(handles.datainfo.Wavelengths,req_wav);
 
     if length(w_subset)<length(handles.datainfo.Wavelengths)        
@@ -696,7 +696,7 @@ if algorithm == 1 | algorithm == 3
     end
     
     for i=1:length(w_subset) 
-       [dummy,tmp] = min(abs(handles.datainfo.Wavelengths - w_subset(i)));
+       [~,tmp] = min(abs(handles.datainfo.Wavelengths - w_subset(i)));
        keep_idx(i) = tmp;
     end
 
@@ -720,14 +720,13 @@ else
     cov_gl = [];
     covAll = [];
 end
-a=1
-set(handles.text10,'String','Processing');
+set(handles.text10,'String','Processing...');
 for run=1:size(handles.Recon,3)
     for slice=1:size(handles.Recon,4)
         R = squeeze(handles.Recon(:,:,run,slice,1,:));
         HM(:,:,1,:) = R;
         mixed = permute(HM,[4,3,1,2]);
-        [umx, A, flag, message] = unmix(mixed, handles.datainfo.Wavelengths, handles.spectra, method, cov_gl, covAll, thresh, size(mixed,3),size(mixed,4));
+        [umx, ~, flag, message] = unmix(mixed, handles.datainfo.Wavelengths, handles.spectra, method, cov_gl, covAll, thresh, size(mixed,3),size(mixed,4));
         if flag == 0
             warndlg(message);
             return;
