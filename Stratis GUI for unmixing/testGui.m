@@ -132,7 +132,8 @@ slice = get(handles.listbox1,'value');
 handles.CurrSlice = slice;
 guidata(hObject, handles);
 if sum(strcmp(fieldnames(handles), 'Analysis')) == 0
-    R = squeeze(handles.Recon(:,:,handles.CurrRep,handles.CurrSlice,1,handles.CurrWav));
+%     R = squeeze(handles.Recon(:,:,handles.CurrRep,handles.CurrSlice,1,handles.CurrWav));
+    R = squeeze(handles.Recon(:,:,handles.CurrSlice,handles.CurrWav));          % edited to work with my data format
     axes(handles.axes1);
     imagesc(R(:,:)); colormap('gray'); axis off; axis equal;
 else
@@ -196,7 +197,8 @@ wav = get(handles.listbox3,'value');
 handles.CurrWav = wav;
 guidata(hObject, handles);
 if sum(strcmp(fieldnames(handles), 'Analysis')) == 0
-    R = squeeze(handles.Recon(:,:,handles.CurrRep,handles.CurrSlice,1,handles.CurrWav));
+%     R = squeeze(handles.Recon(:,:,handles.CurrRep,handles.CurrSlice,1,handles.CurrWav));
+    R = squeeze(handles.Recon(:,:,handles.CurrSlice,handles.CurrWav));
     axes(handles.axes1);
     imagesc(R(:,:)); colormap('gray'); axis off; axis equal;
 else
@@ -384,7 +386,7 @@ function pushbutton_LoadRecon_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-[FileNameRecon,PathNameRecon,FilterIndexRecon] = uigetfile({'*.msot';'*.mat'});
+[FileNameRecon,PathNameRecon,FilterIndexRecon] = uigetfile({'*.mat';'*.msot'});     %.mat->load recon || .msot->load raw acquisition data
 
 if FileNameRecon
 
@@ -393,7 +395,7 @@ if FileNameRecon
     javaaddpath java_class\patbeans.jar                
     javaaddpath java_class\xmlbeans-2.5.0\lib\xbean.jar
 
-    if FileNameRecon(end-3:end) == 'msot'
+    if FileNameRecon(end-3:end) == 'msot'           % loading raw acquisition data
         
         [datainfo]  = loadMSOT( [PathNameRecon '\' FileNameRecon] );
         
@@ -441,7 +443,6 @@ if FileNameRecon
         handles.datainfoKeep = handles.datainfo;
         set(handles.pushbuttonSpec,'enable','on');
         set(handles.pushbuttonCalSpec,'enable','on');
-        handles.datainfo.Wavelengths
 
         % set(handles.listbox1)
         set(handles.listbox1,'string',1:length(datainfo.ZPositions));
@@ -451,10 +452,11 @@ if FileNameRecon
         handles.CurrSlice = 1;
         handles.CurrRep = 1;
         handles.CurrWav = length(handles.datainfo.Wavelengths);
-    else
+    else            % load .mat (reconstructed data)
         % Find any variable in the file that starts with Recon
         % Depending on the dimensionality annotate
         handles.reconNodes = 1;
+        disp("Loading Recon structure..");
         handles.ReconLoad = load([PathNameRecon '\' FileNameRecon]);
         load_vars = fieldnames(handles.ReconLoad);
         %iterate through the fileds until you find a 'Recon' field
@@ -484,8 +486,8 @@ if FileNameRecon
                 tmp(:,:,:,:,1,:) = tmpRecon(:,:,:,:,:);
                 handles.Recon = tmp;
             case 6
-                % x-y-runs-slices-wavelengths-averages
-                tmp(:,:,:,:,1,:) = mean(tmpRecon(:,:,:,:,:,:),6);
+                % x-y-runs-slices-reps-wavelengths
+                tmp(:,:,:,:,1,:) = mean(tmpRecon(:,:,:,:,:,:),5);       % average across reps
                 handles.Recon = tmp;
         end
 
@@ -493,7 +495,6 @@ if FileNameRecon
             handles.datainfo = handles.ReconLoad.datainfo;
             set(handles.pushbuttonSpec,'enable','on');
             set(handles.pushbuttonCalSpec,'enable','on');
-            handles.datainfo.Wavelengths
 
             % set(handles.listbox1)
             clear handles.listbox1;
@@ -508,7 +509,8 @@ if FileNameRecon
 
         handles.CurrSlice = 1;
         handles.CurrRep = 1;
-        handles.CurrWav = length(handles.datainfo.Wavelengths);
+%         handles.CurrWav = length(handles.datainfo.Wavelengths);
+        handles.CurrWav = 1;
 
     end
     
