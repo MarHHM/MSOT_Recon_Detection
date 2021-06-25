@@ -12,8 +12,6 @@ switch method
         cell_mat{2,1} = L;
         A_mat = cell2mat(cell_mat);
         b_vec = [b_vec; zeros(nn,1)];
-        
-        disp("Reconstructing..");
         if noneg
             R=nnls_conjgrad_armijo(A_mat,b_vec,zeros(n*n,1),0.001,5,3);
         else

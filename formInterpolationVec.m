@@ -1,6 +1,6 @@
 function [t, ts] = formInterpolationVec(datainfo, n, time_res, image_width, c)
 % ts --> sampling instants
-% t --> interolated (& cut) time instants (used usually with MB recons)
+% t --> interpolated (& cut) time instants (used usually with MB recons)
 
 % forming truncated interpolation t vec as in code for reconing corresp images (taken AS IS from recon code)
 RecordLength = double(datainfo.MeasurementDesc.RecordLength);
