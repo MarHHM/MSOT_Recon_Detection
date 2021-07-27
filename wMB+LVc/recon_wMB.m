@@ -1,31 +1,21 @@
-function recon_wMB(scan_path, nonNeg, LVc, RECON_ALL, shift)
+function recon_wMB(scan_path, NON_NEG, LVc, RECON_ALL, recon_lims, base_convMB_recon__fName, addtnl_note, shift)
 %%% try Luis weighting (wBP - wBP with apriori - wMB)
 % LVc: false -> original wMB (Luis PMB 2013)
 
 %% VIP
-% - make sure that folder "masks" exist in the dataset path
 % - input range (zpos, rep, wl)
 % - for weighted methods+apriori --> choose w higher than 1
 % - for each dataset, try different "w" till u find the best & save it
 % - nPairs --> if too large, can fill memory!!
 
-
-if nargin == 4
+if nargin < 8
     shift = 0;
 end
-%% PATHS & PARAMS
-
-%%% PARAMS
-% scan_path = "S:\PA_DATASETS\MSOT 256\Qutaiba phantom\Scan_8";
-disp("Loading conv MB recon structure..")
-parent_convMB_recon = load(scan_path + "\recons\MB_Tik - nonNeg_" + int2str(nonNeg) + "-zpos_1-reps_1-wls_11-reconRes_7.5e-05-imW_0.03.mat");      % load an aribtrary recon to test the masks
-% parent_convMB_recon = load([scan_path "\recons\MB_Tik - nonNeg_" int2str(nonNeg) "-zpos_8-reps_1-wls_13-reconRes_7.5e-05-imW_0.03.mat"]);      % load an aribtrary recon to test the masks
-disp("done.")
-
-SAVE_RECON = true; 
+%% PARAMS
+SAVE_RECON = true;
 % SIGS_LOADED_IN_RAM = 1;               % if sigMat_truncated (from the convMB_tik) is already loaded in the RAM
 LOAD_A_DIMS = 1;                      % if the area containing the whole target has been delineated before
-LOAD_B_DIMS = 0;                      % if the area containing the reflector has been delineated before
+LOAD_B_DIMS = 0;                      % (ONLY for apriori) if the area containing the reflector has been delineated before
 
 %%% weighted recon params
 LUIS_WEIGHT_METHOD = "wMB";    %    "wMB"     "wMB+apriori"
@@ -36,53 +26,53 @@ t_undercompnsated_ratio = 0.5;     % further part of the record length (ratio of
 
 %%% wMB+apriori params (as in the Luis APL 2011 paper (wBP+apriori))
 P_r.nHist = 40;                 % originially in Luis code 40
-P_r.nPairs = parent_convMB_recon.n^2;              % originially in Luis code 500 (used also 50e3 in his paper) --> max theoritical should be "(n^2)^2" if both A & B cover the whole image
+
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% main %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-datainfo = parent_convMB_recon.datainfo;
-im_w = parent_convMB_recon.im_w;
-t = parent_convMB_recon.t;
-angle_sensor = parent_convMB_recon.angle_sensor;
-ts = parent_convMB_recon.ts;
-sigMat_truncated = parent_convMB_recon.sigMat_truncated;
-reconRes = parent_convMB_recon.reconRes;
-f_min = parent_convMB_recon.f_min;
-f_max = parent_convMB_recon.f_max;
-t_res = parent_convMB_recon.t_res;
-MB_regu = parent_convMB_recon.MB_regu;
+disp("Loading base conv MB recon structure..");
+base_convMB_recon = load(scan_path+"\recons\"+base_convMB_recon__fName+"\"+base_convMB_recon__fName+".mat");      % load an aribtrary recon to test the masks
+datainfo = base_convMB_recon.datainfo;
+im_w = base_convMB_recon.im_w;
+t = base_convMB_recon.t;
+angle_sensor = base_convMB_recon.angle_sensor;
+ts = base_convMB_recon.ts;
+sigMat_truncated = base_convMB_recon.sigMat_truncated;
+res = base_convMB_recon.res;
+f_min = base_convMB_recon.f_min;
+f_max = base_convMB_recon.f_max;
+t_res = base_convMB_recon.t_res;
+MB_regu = base_convMB_recon.MB_regu;
+P_r.nPairs = base_convMB_recon.n^2;              % originially in Luis code 500 (used also 50e3 in his paper) --> max theoritical should be "(n^2)^2" if both A & B cover the whole image
+A_matPath = base_convMB_recon.A_matPath;
 
 % n_det = datainfo.HWDesc.n_det;
 % r_sensor = datainfo.HWDesc.Radius;
 n_det = 256;
 r_sensor = 0.0405;
-T = parent_convMB_recon.datainfo.AverageTemperature;
+T = base_convMB_recon.datainfo.AverageTemperature;
 c = 12 + round(1.402385 * 1e3 + 5.038813 * T - 5.799136 * 1e-2 * T^2 + 3.287156 * 1e-4 * T^3 - 1.398845 * 1e-6 * T^4 + 2.787860 * 1e-9 * T^5 );
 % [t, ts] = formInterpolationVec(datainfo, n, t_res, im_w, c);
 
-A_mat = load(parent_convMB_recon.A_matPath).A_mat;
+A_mat = load(A_matPath).A_mat;
 run_idx = 1;
+rep_begin = 1;        rep_end = datainfo.RepNum;  %usually only 1 rep
 if RECON_ALL
-        disp("The full dataset will be reconstructed!");
-        zpos_begin = 1;       zpos_end = length(parent_convMB_recon.datainfo.ZPositions);
-        rep_begin = 1;        rep_end = parent_convMB_recon.datainfo.RepNum;
-        wl_begin = 1;         wl_end = length(parent_convMB_recon.datainfo.Wavelengths);
-    else
-        zpos_begin = 1;                            % 5
-        zpos_end = 1;                              % 5
-        rep_begin = 1;
-        rep_end = 1;
-        wl_begin = 1;                               % 6 is 750nm for Hong phantom (scan_69 -> AlexaFl_750)
-        wl_end = 1;
+    disp('!! THE FULL SCAN WILL BE RECONSTRUCTED !!');
+    zpos_begin = 1;       zpos_end = length(datainfo.ZPositions);
+    wl_begin = 1;         wl_end = length(datainfo.Wavelengths);
+else
+    zpos_begin = recon_lims.zpos(1);      zpos_end = recon_lims.zpos(2);
+    wl_begin = recon_lims.wls(1);         wl_end = recon_lims.wls(2);
 end
-    
 
-n = floor(im_w/parent_convMB_recon.reconRes);   % reconstructed im size (pixels)
+
+n = floor(im_w/base_convMB_recon.res);   % reconstructed im size (pixels)
 disp("--recon method: " + LUIS_WEIGHT_METHOD + " with w = " + num2str(w) + " - LVc = " + num2str(LVc) + "--");
 
 % if ~SIGS_LOADED_IN_RAM
 %     [datainfo_recon, Recon_MB] = loadRecon_iThera(sigMat_pathName);
 % end
-imToChooseMask = parent_convMB_recon.Recon_MB(:, :, 1, 1, 1, 1);   % arbitrary slice shown to draw (or check) the mask
+imToChooseMask = base_convMB_recon.Recon(:, :, 1, 1, 1, 1);   % arbitrary slice shown to draw (or check) the mask
 
 % load mask containing the whole target (all optical absorpers & acoustic reflectors - A in the 2011 paper)
 [xc_A, yc_A, Rc_A, logicalMask_A] = checkMask( LOAD_A_DIMS, "A", scan_path, imToChooseMask, im_w );
@@ -94,7 +84,8 @@ end
 mask_wholeTarget = rsmak( "circle", Rc_A*n/im_w, [(n/2+xc_A*n/im_w) (n/2+yc_A*n/im_w)] );
 figure("name", "just to confirm that masks are correct!!");
     imagesc( imToChooseMask ), title( "conv MB - arbitrary slice" ), colormap( bone ), colorbar, axis image off;
-    hold on, fnplt(mask_wholeTarget), axis image off, hold off;
+hold on, fnplt(mask_wholeTarget), axis image off, hold off;
+drawnow();
 %     print(h);       % forces the figure to be drawn, but sends it to the printer as well
 
 % mask_reflector = rsmak( "circle", Rc_B*n/im_w, [(n/2+xc_B*n/im_w) (n/2+yc_B*n/im_w)] );
@@ -115,18 +106,18 @@ for zpos_idx = 1 : zpos_end-zpos_begin+1
             
             switch LUIS_WEIGHT_METHOD
                 case "wMB"
-%                     Dxy = im_w/(n-1); % sampling distance in x and y
-%                     x = (-1)*(n/2-0.5)*Dxy:Dxy:(n/2-0.5)*Dxy; % position of pixels in the x direction
-%                     y = (-1)*(n/2-0.5)*Dxy:Dxy:(n/2-0.5)*Dxy; % position of pixels in the y direction
-%                     [X,Y] = meshgrid(x,y); % grid of points in x and y
-%                     nn = n*n;
-%                     lsqr_iter = 50;
+                    %                     Dxy = im_w/(n-1); % sampling distance in x and y
+                    %                     x = (-1)*(n/2-0.5)*Dxy:Dxy:(n/2-0.5)*Dxy; % position of pixels in the x direction
+                    %                     y = (-1)*(n/2-0.5)*Dxy:Dxy:(n/2-0.5)*Dxy; % position of pixels in the y direction
+                    %                     [X,Y] = meshgrid(x,y); % grid of points in x and y
+                    %                     nn = n*n;
+                    %                     lsqr_iter = 50;
                     
                     if LVc
                         %%% accessing specific detector signals causing probs
                         j_c = floor( t_undercompnsated_ratio * length(t) );
                         
-                        % see "angles illustration.jpg" 
+                        % see "angles illustration.jpg"
                         theta_start = -pi/4;            % start of detection ring (counting clock-wise !)
                         total_detection_ring_coverage = 3*pi/2;         % inVision 256 coverage is 270 deg
                         theta_end = theta_start + total_detection_ring_coverage;     % end of detection ring
@@ -166,8 +157,8 @@ for zpos_idx = 1 : zpos_end-zpos_begin+1
                     P_d = zeros(1,n_det*length(t));
                     for i = 1:n_det                                        % for each transducer i
                         theta = angle_sensor(i);                             % angle of the transducer
-%                         x_sensor = r_sensor*cos(theta);                     % horizontal position of the transducer
-%                         y_sensor = r_sensor*sin(theta);                     % vertical position of the transducer
+                        %                         x_sensor = r_sensor*cos(theta);                     % horizontal position of the transducer
+                        %                         y_sensor = r_sensor*sin(theta);                     % vertical position of the transducer
                         
                         % calculate the part of A covered by the current transducer for different time instants (A_ij for all t_j values for the current trans i)
                         A_ij = area_covered_detector_circle_distance( c, t, xc_A, yc_A, Rc_A, r_sensor, theta );
@@ -198,7 +189,7 @@ for zpos_idx = 1 : zpos_end-zpos_begin+1
                     W = sparse( pos, pos, P_d, n_det*length(t), n_det*length(t) );   % just putting P_d as a diagonal matrix
                     
                     %%% weighting A_mat & b_vec
-%                     disp("weighting A_mat & b_vec");
+                    %                     disp("weighting A_mat & b_vec");
                     A_matW = W*A_mat;
                     
                     b_vec_In = prepareMeasuredPressureVec( sigMat_current, ts, t, n_det );
@@ -214,7 +205,7 @@ for zpos_idx = 1 : zpos_end-zpos_begin+1
                     
                     
                     %%% do recon
-                    ReconW(:, :, 1, zpos_idx, rep_idx, wl_idx) = reconstruction( A_matW, b_vecW, n, parent_convMB_recon.RECON_METHOD, parent_convMB_recon.MB_regu, nonNeg );
+                    ReconW(:, :, 1, zpos_idx, rep_idx, wl_idx) = reconstruction( A_matW, b_vecW, n, base_convMB_recon.RECON_METHOD, base_convMB_recon.MB_regu, NON_NEG );
                     
                     %           switch LIMITED_VIEW_CORRCTN
                     %             case "spatio-temporal weighting"
@@ -317,27 +308,32 @@ end
 
 %%% draw result
 % [tickLocs, tickLabels] = getImageTicks(n, im_w);
-figure,...
-    imagesc(ReconW(:, :, 1, 1, 1, 1)); colormap(bone), title(LUIS_WEIGHT_METHOD+" (\omega = "+num2str(w)+") - LVc = "+num2str(LVc), "Interpreter", "tex"), colorbar, axis image off;    % OR is f(t_{ij})
+% figure,...
+%     imagesc(ReconW(:, :, 1, 1, 1, 1)); colormap(bone), title(LUIS_WEIGHT_METHOD+" (\omega = "+num2str(w)+") - LVc = "+num2str(LVc), "Interpreter", "tex"), colorbar, axis image off;    % OR is f(t_{ij})
 % set(gca, "YTick", tickLocs, "XTick", tickLocs, "XTickLabel", tickLabels, "YTickLabel", tickLabels);
 
 if SAVE_RECON
-    if ~exist((scan_path + "\recons"), "dir")
-        mkdir((scan_path + "\recons"))
+    if ~exist((scan_path+"\recons"), 'dir')
+        mkdir((scan_path+"\recons"));
     end
-    reconStruct__fname = ( scan_path + "\recons\"+ LUIS_WEIGHT_METHOD+ " - nonNeg_" + num2str(nonNeg) + "-zpos_" +...
-                           num2str(zpos_end-zpos_begin+1) + "-reps_" + num2str(rep_end-rep_begin+1) + "-wls_" + num2str(wl_end-wl_begin+1) +...
-                           "-reconRes_" + num2str(reconRes) + "-imW_" + num2str(im_w)  + "-w_" + num2str(w) +"-LVc_" + num2str(LVc) + "shift" + num2str(shift) + ".mat"...
-                          );
-    if exist(reconStruct__fname, "file")                % to avoid overwriting an existing recon
-       [filepath, name, ext] = fileparts(reconStruct__fname);
-        reconStruct__fname = filepath+"/"+name+"__"+ext;
+    reconStruct__fName = strcat(LUIS_WEIGHT_METHOD,'-LVc_',num2str(LVc),'-nonNeg_',num2str(NON_NEG),'-zposs_',num2str(zpos_end-zpos_begin+1),...
+        '-wls_',num2str(wl_end-wl_begin+1),addtnl_note);
+    if exist((scan_path+"\recons\"+reconStruct__fName), 'dir')                % to avoid overwriting an existing recon
+        reconStruct__fName = (reconStruct__fName+"__");
     end
-%     note = "sigMat_truncated attached with this recon is laser-energy corrected & filtered";
-    save(reconStruct__fname, "ReconW", "sigMat_truncated", "datainfo", "im_w", "reconRes", "f_min", "f_max", "t_res", "MB_regu",...
-        "zpos_begin", "zpos_end", "wl_begin", "wl_end", "rep_begin", "rep_end", "nonNeg", "LVc", "P_r", "-v7.3" );
-    disp("-> Reconstruction saved to disk.");
+    reconStruct__path = (scan_path+"\recons\"+reconStruct__fName);
+    mkdir(reconStruct__path);
+    save((reconStruct__path+"\"+reconStruct__fName+".mat"),...
+        'scan_path', 'LUIS_WEIGHT_METHOD', 'ReconW', 'sigMat_truncated', 'datainfo', 'im_w', 'res', 'n', 'f_min', 'f_max','t_res', 'ts', 't',...
+        'angle_sensor','MB_regu', 'run_idx', 'zpos_begin', 'zpos_end', 'wl_begin', 'wl_end', 'rep_begin', 'rep_end', 'NON_NEG',...
+        'A_matPath', "LVc", "P_r", '-v7.3');       % sigMat_truncated attached with this recon is laser-energy corrected & filtered
+    disp(("-> Reconstruction saved to "+reconStruct__path));
     
+    % save a representative image (for ease of browsing later)
+    rprsnttv_im = ReconW(:,:,1,1,1,1);
+    figure, imagesc(rprsnttv_im),...
+        title(("recon: "+reconStruct__fName+" (rprsnttv_im)"), 'Interpreter', 'none'), colormap(bone), colorbar, axis image off;
+    export_fig((reconStruct__path+"\"+reconStruct__fName+".png"), '-nocrop');
 end
 
 %% sharpness calculation (Hong code) --> doesn"t work well with my algo!!

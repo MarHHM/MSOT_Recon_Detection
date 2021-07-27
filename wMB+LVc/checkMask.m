@@ -3,8 +3,11 @@ function [xc_mm, yc_mm, Rc_mm, logicalMask ] = checkMask( LOAD_MASK_DIMS, mask ,
 if LOAD_MASK_DIMS
   %   [xc, yc, Rc, logicalMask] = loadMaskParams( sigMat_pathName, mask );
   %TO DO: save others masks in a structure form, then delete "loadMaskParams()"!!
-  disp("mask " + mask + " found on disk & loaded into workspace..")
+  if ~exist((sigMat_pathName + "\masks"), 'dir')
+    error("No masks found for this scan.. Please create them first!");
+  end
   temp = load(sigMat_pathName + "\masks\mask_" + mask);
+  disp("mask " + mask + " found on disk & loaded..")
   logicalMask = temp.logicalMask;
   xc_mm = temp.xc_mm;
   yc_mm = temp.yc_mm;

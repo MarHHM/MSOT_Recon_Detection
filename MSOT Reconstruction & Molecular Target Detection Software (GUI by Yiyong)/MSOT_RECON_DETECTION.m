@@ -54,7 +54,7 @@ function MSOT_RECON_DETECTION_OpeningFcn(hObject, ~, handles, varargin)
 
 % Choose default command line output for MSOT_RECON_DETECTION
 handles.output = hObject;
-cd('C:\Users\marwan.muhammad\Dropbox\PA_imaging\MSOT_Recon_Detection');
+cd('C:\Users\ibn_a\OneDrive\PA_imaging\wMB+LVc\MSOT_Recon_Detection\');
 addpath('unmixing code');
 addpath('reconstruction code');
 addpath('MB matrices');
@@ -369,21 +369,15 @@ ith handles and user data (see GUIDATA)
 
 
 % --- Executes on button press in pushbutton_LoadsigMat.
-function pushbutton_LoadsigMat_Callback(hObject, eventdata, handles)
+function pushbutton_LoadsigMat_Callback(hObject, ~, handles)
 % hObject    handle to pushbutton_LoadsigMat (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-[FileNamesigMat,PathNamesigMat,FilterIndexsigMat] = uigetfile({'*.msot'});
+[FileNamesigMat,PathNamesigMat,~] = uigetfile({'*.msot'});
 
 if FileNamesigMat
-    
-    javaaddpath MSOTBeans\msotbeans.jar
-    javaaddpath java_class\recon.jar
-    javaaddpath java_class\patbeans.jar
-    javaaddpath java_class\xmlbeans-2.5.0\lib\xbean.jar
-    
-    if FileNamesigMat(end-3:end) == 'msot'
+    if FileNamesigMat(end-3:end) == "msot"
         [datainfo] = loadMSOT([PathNamesigMat '\' FileNamesigMat]);
         [sigMat] = loadMSOTSignals(datainfo);
         handles.sigMat=sigMat;
@@ -398,8 +392,9 @@ if FileNamesigMat
         set(handles.listbox2,'string',1:handles.datainfo.RunNum);
         set(handles.listbox3,'string',handles.datainfo.Wavelengths);
         set(handles.text9,'String',handles.datainfo.Name);
-        T = handles.datainfo.AverageTemperature;
-        handles.c= 12+round(1.402385 * 1e3 + 5.038813 * T - 5.799136 * 1e-2 * T^2 + 3.287156 * 1e-4 * T^3 - 1.398845 * 1e-6 * T^4 + 2.787860 * 1e-9 * T^5 );
+%         T = handles.datainfo.AverageTemperature;
+%         handles.c= 12+round(1.402385 * 1e3 + 5.038813 * T - 5.799136 * 1e-2 * T^2 + 3.287156 * 1e-4 * T^3 - 1.398845 * 1e-6 * T^4 + 2.787860 * 1e-9 * T^5 );
+        handles.c = 1465;       % for heavy water (Qutaiba\Study_4)
         set(handles.text18,'String',handles.c);
         
         handles.CurrSlice = 1;
@@ -418,8 +413,8 @@ if FileNamesigMat
         set(handles.edit7,'String',handles.filter_min/1e6);
         set(handles.edit8,'String',handles.filter_max/1e6);
         
-        set(handles.slider7,'Max',handles.c+20);
-        set(handles.slider7,'Min',handles.c-20);
+        set(handles.slider7,'Max', 1580);
+        set(handles.slider7,'Min', 1420);
         set(handles.slider7,'Value',handles.c);
         set(handles.slider7,'SliderStep',[3/39,5/39]);
         
@@ -433,7 +428,16 @@ if FileNamesigMat
         
         set(handles.text16,'String',handles.MB_regu);
         
-        handles.angle_sensor = [handles.datainfo.HWDesc.StartAngle:handles.datainfo.HWDesc.StepAngle:handles.datainfo.HWDesc.EndAngle];
+        try
+            handles.angle_sensor = handles.datainfo.HWDesc.StartAngle : handles.datainfo.HWDesc.StepAngle : handles.datainfo.HWDesc.EndAngle;
+        catch     % error due to different MSOT format - check if new reader is required from iThera
+            handles.datainfo.HWDesc.Radius = 0.0405;
+            handles.datainfo.HWDesc.StartAngle = -0.7762;
+            handles.datainfo.HWDesc.EndAngle = 3.9178;
+            handles.datainfo.HWDesc.NumDetectors = 256;
+            handles.datainfo.HWDesc.StepAngle = (handles.datainfo.HWDesc.EndAngle - handles.datainfo.HWDesc.StartAngle)/(handles.datainfo.HWDesc.NumDetectors-1);
+            handles.angle_sensor = handles.datainfo.HWDesc.StartAngle : handles.datainfo.HWDesc.StepAngle : handles.datainfo.HWDesc.EndAngle;
+        end
         
         handles.ts = 0:1/handles.datainfo.HWDesc.SamplingFrequency:(handles.datainfo.MeasurementDesc.RecordLength-1)/handles.datainfo.HWDesc.SamplingFrequency; % sampling instants
         
@@ -451,12 +455,15 @@ if FileNamesigMat
             handles.t = handles.ts(pos_start):dt:handles.ts(pos_end);           % downsampled (& cut) time vector  (less than ts)
             handles.sizeT = length(handles.t);
             
-            % check for mode matrix if saved, otherwise build it
-            if exist ([folder_name '\' 'A_mat_t_res_',num2str(handles.time_res),'_',num2str(handles.n),'x',num2str(handles.n),'_width_',num2str(handles.image_width*1e3),'_c_',num2str(handles.c),'.mat'])
-                load ([folder_name '\' 'A_mat_t_res_',num2str(handles.time_res),'_',num2str(handles.n),'x',num2str(handles.n),'_width_',num2str(handles.image_width*1e3),'_c_',num2str(handles.c),'.mat'])
+            % check for model matrix if saved, otherwise build it
+            if exist([folder_name '\' 'A_mat_t_res_',num2str(handles.time_res),'_',num2str(handles.n),'x',num2str(handles.n),'_width_',num2str(handles.image_width*1e3),'_c_',num2str(handles.c),'.mat'], 'file')
+                load([folder_name '\' 'A_mat_t_res_',num2str(handles.time_res),'_',num2str(handles.n),'x',num2str(handles.n),'_width_',num2str(handles.image_width*1e3),'_c_',num2str(handles.c),'.mat'])
             else
                 A_mat = Calculate_MatrixMB_Luis(handles.c,handles.n,handles.image_width,handles.t,handles.datainfo.HWDesc.Radius,handles.angle_sensor,handles.n_angles);
-                save (([folder_name '\' 'A_mat_t_res_',num2str(handles.time_res),'_',num2str(handles.n),'x',num2str(handles.n),'_width_',num2str(handles.image_width*1e3),'_c_',num2str(handles.c),'.mat']) , 'A_mat','-v7.3')
+                if ~exist(folder_name, 'dir')
+                    mkdir(folder_name);
+                end
+                save(([folder_name '\' 'A_mat_t_res_',num2str(handles.time_res),'_',num2str(handles.n),'x',num2str(handles.n),'_width_',num2str(handles.image_width*1e3),'_c_',num2str(handles.c),'.mat']) , 'A_mat','-v7.3')
             end
         end
         
@@ -1053,7 +1060,7 @@ function popupmenu1_KeyPressFcn(hObject, eventdata, handles)
 
 
 % --- Executes on button press in pushbuttonRecon.
-function pushbuttonRecon_Callback(hObject, eventdata, handles)
+function pushbuttonRecon_Callback(hObject, ~, handles)
 % hObject    handle to pushbuttonRecon (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -1309,12 +1316,15 @@ folder_name = [init_folder_name '\' sub_folder_name];
 
 if strcmp(handles.recon_method,'MB_Tik')||strcmp(handles.recon_method,'MB_TVL1')||strcmp(handles.recon_method,'WaveletPacket')
     
-    if exist([folder_name '\' 'A_mat_t_res_',num2str(handles.time_res),'_',num2str(handles.n),'x',num2str(handles.n),'_width_',num2str(handles.image_width*1e3),'_c_',num2str(handles.c),'.mat'])
-        load ([folder_name '\' 'A_mat_t_res_',num2str(handles.time_res),'_',num2str(handles.n),'x',num2str(handles.n),'_width_',num2str(handles.image_width*1e3),'_c_',num2str(handles.c),'.mat'])
+    % check for model matrix if saved, otherwise build it
+    if exist([folder_name '\' 'A_mat_t_res_',num2str(handles.time_res),'_',num2str(handles.n),'x',num2str(handles.n),'_width_',num2str(handles.image_width*1e3),'_c_',num2str(handles.c),'.mat'], 'file')
+        load([folder_name '\' 'A_mat_t_res_',num2str(handles.time_res),'_',num2str(handles.n),'x',num2str(handles.n),'_width_',num2str(handles.image_width*1e3),'_c_',num2str(handles.c),'.mat'])
     else
         A_mat = Calculate_MatrixMB_Luis(handles.c,handles.n,handles.image_width,handles.t,handles.datainfo.HWDesc.Radius,handles.angle_sensor,handles.n_angles);
-        save (([folder_name '\' 'A_mat_t_res_',num2str(handles.time_res),'_',num2str(handles.n),'x',num2str(handles.n),'_width_',num2str(handles.image_width*1e3),'_c_',num2str(handles.c),'.mat']) , 'A_mat','-v7.3')
-        
+        if ~exist(folder_name, 'dir')
+            mkdir(folder_name);
+        end
+        save(([folder_name '\' 'A_mat_t_res_',num2str(handles.time_res),'_',num2str(handles.n),'x',num2str(handles.n),'_width_',num2str(handles.image_width*1e3),'_c_',num2str(handles.c),'.mat']) , 'A_mat','-v7.3')
     end
 end
 
@@ -1438,7 +1448,7 @@ R = squeeze(handles.Recon(:,:,handles.CurrRun,handles.CurrSlice,1,handles.CurrWa
 R=addtext(R,handles.n,handles.CurrRun,handles.CurrSlice,handles.datainfo.Wavelengths,handles.CurrWav,handles.image_width,handles.c,handles.recon_method,handles.MB_regu,handles.truncated,handles.noneg);
 axes(handles.axes1);
 imagesc(R(:,:)); colormap('gray'); axis off; axis equal;colorbar ;
-figure, imagesc(R(:,:)); colormap('gray'); axis off; axis equal;colorbar ;      % Mar
+% figure, imagesc(R(:,:)); colormap('gray'); axis off; axis equal;colorbar ;
 guidata(hObject, handles);
 
 % --- Executes during object creation, after setting all properties.
@@ -1644,7 +1654,7 @@ end
 
 
 % --- Executes on slider movement.
-function slider7_Callback(hObject, eventdata, handles)
+function slider7_Callback(hObject, ~, handles)
 % hObject    handle to slider7 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -1659,7 +1669,7 @@ set(handles.text18,'String',handles.c);
 
 
 % --- Executes during object creation, after setting all properties.
-function slider7_CreateFcn(hObject, eventdata, handles)
+function slider7_CreateFcn(hObject, ~, ~)
 % hObject    handle to slider7 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called

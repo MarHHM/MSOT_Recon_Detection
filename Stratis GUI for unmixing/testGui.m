@@ -22,7 +22,7 @@ function varargout = testGui(varargin)
 
 % Edit the above text to modify the response to help testGui
 
-% Last Modified by GUIDE v2.5 25-Jun-2021 18:39:47
+% Last Modified by GUIDE v2.5 03-Jul-2021 01:38:36
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -220,7 +220,7 @@ end
 
 
 % --- Executes on selection change in popupmenu1.
-function popupmenu1_Callback(hObject, eventdata, handles)
+function popupmenu1_Callback(~, ~, handles)
 % hObject    handle to popupmenu1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -228,8 +228,8 @@ function popupmenu1_Callback(hObject, eventdata, handles)
 % Hints: contents = cellstr(get(hObject,'String')) returns popupmenu1 contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from popupmenu1
 algo = get(handles.popupmenu1, 'value');
-algo
-if algo == 3 | algo == 4
+% algo
+if algo == 3 || algo == 1
     set(handles.popupmenu4,'String','no thresh');
 else
     set(handles.popupmenu4,'String',{'no thresh','PFA 2.5e-3 (100 pix)', 'PFA 5e-4 (20 pix)','PFA 1.25e-4 (5 pix)'});
@@ -343,7 +343,7 @@ else
 end
 
 % --- Executes during object creation, after setting all properties.
-function popupmenu2_CreateFcn(hObject, eventdata, handles)
+function popupmenu2_CreateFcn(hObject, ~, ~)
 % hObject    handle to popupmenu2 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -354,48 +354,17 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-% --- Executes on button press in pushbutton1.
-function pushbutton1_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
-% --- Executes on button press in radiobutton1.
-function radiobutton1_Callback(hObject, eventdata, handles)
-% hObject    handle to radiobutton1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of radiobutton1
-
-
-% --- Executes on button press in radiobutton2.
-function radiobutton2_Callback(hObject, eventdata, handles)
-% hObject    handle to radiobutton2 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of radiobutton2
-
-
 % --- Executes on button press in pushbutton_LoadRecon.
 function pushbutton_LoadRecon_Callback(hObject, ~, handles)
 % hObject    handle to pushbutton_LoadRecon (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-[FileNameRecon,PathNameRecon,~] = uigetfile({'*.mat';'*.msot'});     %.mat->load recon || .msot->load raw acquisition data
+cd('C:\PA_local\DATASETS\MSOT 256\');
+[FileNameRecon, PathNameRecon, ~] = uigetfile({'*.mat';'*.msot'});     %.mat->load recon || .msot->load raw acquisition data
 
 if FileNameRecon
-
-%     javaaddpath MSOTBeans\msotbeans.jar
-%     javaaddpath java_class\recon.jar                   
-%     javaaddpath java_class\patbeans.jar                
-%     javaaddpath java_class\xmlbeans-2.5.0\lib\xbean.jar
-
-    if FileNameRecon(end-3:end) == 'msot'           % loading raw acquisition data
+    if FileNameRecon(end-3:end) == "msot"           % loading raw acquisition data
         
         [datainfo]  = loadMSOT( [PathNameRecon '\' FileNameRecon] );
         
@@ -456,7 +425,7 @@ if FileNameRecon
         % Find any variable in the file that starts with Recon
         % Depending on the dimensionality annotate
         handles.reconNodes = 1;
-        disp("Loading Recon structure..");
+        set(handles.text9, 'String', "Loading Recon Structure.."), drawnow();
         handles.ReconLoad = load([PathNameRecon '\' FileNameRecon]);
         load_vars = fieldnames(handles.ReconLoad);
         %iterate through the fileds until you find a 'Recon' field
@@ -634,6 +603,9 @@ vis = get(handles.popupmenu3,'value');
 % spec = get(handles.popupmenu2,'value');
 
 switch algorithm
+    case 1
+        method = 'OSP';
+        thresh = 0;
     case 2
         method = 'Simple';
         switch thresh_sel
@@ -649,7 +621,22 @@ switch algorithm
                 %PFA = 1.25e-04 / 5 pixels per 200x200 image
                 thresh = 0.0019;
         end
-    case 1
+    case 3
+    method = 'RSDF_interp';
+    switch thresh_sel
+        case 1
+            thresh = 0;
+        case 2
+            %PFA = 0.0025 / 100 pixels per 200x200 image
+            thresh = 4.3662e-04;
+        case 3
+            %PFA = 5e-04 / 20 pixels per 200x200 image
+            thresh = 9.8935e-04;
+        case 4
+            %PFA = 1.25e-04 / 5 pixels per 200x200 image
+            thresh = 0.0019;
+    end
+    case 4
         method = 'QL_shrinkage_adaptive_interp';
         switch thresh_sel
             case 1
@@ -664,29 +651,11 @@ switch algorithm
                 %PFA = 1.25e-04 / 5 pixels per 200x200 image
                 thresh = 0.0018;
         end
-    case 4
-        method = 'OSP';
-        thresh = 0;
-    case 3
-        method = 'RSDF_interp';
-        switch thresh_sel
-            case 1
-                thresh = 0;
-            case 2
-                %PFA = 0.0025 / 100 pixels per 200x200 image
-                thresh = 4.3662e-04;
-            case 3
-                %PFA = 5e-04 / 20 pixels per 200x200 image
-                thresh = 9.8935e-04;
-            case 4
-                %PFA = 1.25e-04 / 5 pixels per 200x200 image
-                thresh = 0.0019;
-        end
 end
 % thresh
 % algorithm
 %Check if the required wavelengths are available for RSDF
-if algorithm == 1 || algorithm == 3
+if algorithm == 4 || algorithm == 3
     req_wav  =700:1:900;
 %     flag_wav=1;
     w_subset = intersect(handles.datainfo.Wavelengths,req_wav);
@@ -789,14 +758,14 @@ thresh = get(handles.popupmenu4,'value');
 vis = get(handles.popupmenu3,'value');
 % spec = get(handles.popupmenu2,'value');
 switch algorithm
+    case 1
+        method = 'OSP';
     case 2
         method = 'Simple';
-    case 1
-        method = 'AMF_QLShr';
     case 3
         method = 'RSDF';
     case 4
-        method = 'OSP';
+        method = 'AMF_QLShr';
 end
 
 init_folder_name = uigetdir();
@@ -1053,7 +1022,7 @@ if handles.reconNodes >1;
 end
 
 % --- Executes during object creation, after setting all properties.
-function lb_recon_CreateFcn(hObject, eventdata, handles)
+function lb_recon_CreateFcn(hObject, ~, ~)
 % hObject    handle to lb_recon (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
