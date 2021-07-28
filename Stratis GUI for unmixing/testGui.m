@@ -364,68 +364,11 @@ cd('C:\PA_local\DATASETS\MSOT 256\');
 [FileNameRecon, PathNameRecon, ~] = uigetfile({'*.mat';'*.msot'});     %.mat->load recon || .msot->load raw acquisition data
 
 if FileNameRecon
-    if FileNameRecon(end-3:end) == "msot"           % loading raw acquisition data
-        
-        [datainfo]  = loadMSOT( [PathNameRecon '\' FileNameRecon] );
-        
-        c=0;
-        for ri = 1:numel(datainfo.ReconNode)
-            c = c+1;
-            reconlist{c} = [datainfo.Name ' -- ' datainfo.ReconNode(ri).Name];
-            handles.reconref{c} = [num2str(1) '-' num2str(ri)];
-        end
-        handles.reconNodes = c;
-        set(handles.lb_recon,'String',reconlist');
-        set(handles.lb_recon,'Value',1);
-        
-        %to be copied in listbox
-        selInd = get(handles.lb_recon,'Value');
-        contents = get(handles.lb_recon,'String');
-        FileNameRecon = contents{selInd};   
-
-        [Recon_MB_L1 wls zpos ts datainfo] = loadMSOTRecon(datainfo,selInd);
-
-        % Need to make sure on how the data are loaded
-        if length(size(Recon_MB_L1)) == 6
-            Nx = size(Recon_MB_L1,1);
-            Ny = size(Recon_MB_L1,2);
-            Nr = size(Recon_MB_L1,3);
-            Ns = size(Recon_MB_L1,4);
-            Nt = size(Recon_MB_L1,5);
-            Nw = size(Recon_MB_L1,6);
-        elseif length(size(Recon_MB_L1)) == 7
-            Recon_MB_L1 = mean(Recon_MB_L1,7);
-            Nx = size(Recon_MB_L1,1);
-            Ny = size(Recon_MB_L1,2);
-            Nr = size(Recon_MB_L1,3);
-            Ns = size(Recon_MB_L1,4);
-            Nt = size(Recon_MB_L1,5);
-            Nw = size(Recon_MB_L1,6);
-            Na = size(Recon_MB_L1,7);
-            Recon_MB_L1= mean(Recon_MB_L1,7);
-        else
-            warning('inconsistent data');
-        end
-        handles.Recon = Recon_MB_L1;
-
-        handles.datainfo = datainfo;
-        handles.datainfoKeep = handles.datainfo;
-        set(handles.pushbuttonSpec,'enable','on');
-        set(handles.pushbuttonCalSpec,'enable','on');
-
-        % set(handles.listbox1)
-        set(handles.listbox1,'string',1:length(datainfo.ZPositions));
-        set(handles.listbox2,'string',1:length(datainfo.RunNum));
-        set(handles.listbox3,'string',handles.datainfo.Wavelengths);
-
-        handles.CurrSlice = 1;
-        handles.CurrRep = 1;
-        handles.CurrWav = length(handles.datainfo.Wavelengths);
-    else            % load .mat (reconstructed data)
-        % Find any variable in the file that starts with Recon
+    if FileNameRecon(end-2:end) == "mat"           % loading reconstructed data
+        % Find any variable in the file that starts with "Recon"
         % Depending on the dimensionality annotate
         handles.reconNodes = 1;
-        set(handles.text9, 'String', "Loading Recon Structure.."), drawnow();
+        set(handles.text10, 'String', "Loading Recon Structure.."), drawnow();
         handles.ReconLoad = load([PathNameRecon '\' FileNameRecon]);
         load_vars = fieldnames(handles.ReconLoad);
         %iterate through the fileds until you find a 'Recon' field
@@ -480,7 +423,63 @@ if FileNameRecon
         handles.CurrRep = 1;
 %         handles.CurrWav = length(handles.datainfo.Wavelengths);
         handles.CurrWav = 1;
-
+    else            % load .msot (raw data) -> inactive for now 
+%         
+%         [datainfo]  = loadMSOT( [PathNameRecon '\' FileNameRecon] );
+%         
+%         c=0;
+%         for ri = 1:numel(datainfo.ReconNode)
+%             c = c+1;
+%             reconlist{c} = [datainfo.Name ' -- ' datainfo.ReconNode(ri).Name];
+%             handles.reconref{c} = [num2str(1) '-' num2str(ri)];
+%         end
+%         handles.reconNodes = c;
+%         set(handles.lb_recon,'String',reconlist');
+%         set(handles.lb_recon,'Value',1);
+%         
+%         %to be copied in listbox
+%         selInd = get(handles.lb_recon,'Value');
+%         contents = get(handles.lb_recon,'String');
+%         FileNameRecon = contents{selInd};   
+% 
+%         [Recon_MB_L1 wls zpos ts datainfo] = loadMSOTRecon(datainfo,selInd);
+% 
+%         % Need to make sure on how the data are loaded
+%         if length(size(Recon_MB_L1)) == 6
+%             Nx = size(Recon_MB_L1,1);
+%             Ny = size(Recon_MB_L1,2);
+%             Nr = size(Recon_MB_L1,3);
+%             Ns = size(Recon_MB_L1,4);
+%             Nt = size(Recon_MB_L1,5);
+%             Nw = size(Recon_MB_L1,6);
+%         elseif length(size(Recon_MB_L1)) == 7
+%             Recon_MB_L1 = mean(Recon_MB_L1,7);
+%             Nx = size(Recon_MB_L1,1);
+%             Ny = size(Recon_MB_L1,2);
+%             Nr = size(Recon_MB_L1,3);
+%             Ns = size(Recon_MB_L1,4);
+%             Nt = size(Recon_MB_L1,5);
+%             Nw = size(Recon_MB_L1,6);
+%             Na = size(Recon_MB_L1,7);
+%             Recon_MB_L1= mean(Recon_MB_L1,7);
+%         else
+%             warning('inconsistent data');
+%         end
+%         handles.Recon = Recon_MB_L1;
+% 
+%         handles.datainfo = datainfo;
+%         handles.datainfoKeep = handles.datainfo;
+%         set(handles.pushbuttonSpec,'enable','on');
+%         set(handles.pushbuttonCalSpec,'enable','on');
+% 
+%         % set(handles.listbox1)
+%         set(handles.listbox1,'string',1:length(datainfo.ZPositions));
+%         set(handles.listbox2,'string',1:length(datainfo.RunNum));
+%         set(handles.listbox3,'string',handles.datainfo.Wavelengths);
+% 
+%         handles.CurrSlice = 1;
+%         handles.CurrRep = 1;
+%         handles.CurrWav = length(handles.datainfo.Wavelengths);
     end
     
     set(handles.pushbuttonAnalyze,'enable','off');
@@ -503,7 +502,8 @@ if FileNameRecon
         % disp('remove handles')
     end
 
-    set(handles.text9,'String',handles.datainfo.Name);
+    set(handles.text9, 'String', (handles.datainfo.Name+"/"+FileNameRecon));
+    set(handles.text10, 'String', "Ready");
     
     R = squeeze(handles.Recon(:,:,handles.CurrRep,handles.CurrSlice,1,end));
     axes(handles.axes1);
