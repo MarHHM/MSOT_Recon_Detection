@@ -22,7 +22,7 @@ function varargout = testGui(varargin)
 
 % Edit the above text to modify the response to help testGui
 
-% Last Modified by GUIDE v2.5 03-Jul-2021 01:38:36
+% Last Modified by GUIDE v2.5 03-Aug-2021 17:51:45
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -43,9 +43,8 @@ else
 end
 % End initialization code - DO NOT EDIT
 
-
 % --- Executes just before testGui is made visible.
-function testGui_OpeningFcn(hObject, eventdata, handles, varargin)
+function testGui_OpeningFcn(hObject, ~, handles, varargin)
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -86,9 +85,8 @@ guidata(hObject, handles);
 % UIWAIT makes testGui wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 
-
 % --- Outputs from this function are returned to the command line.
-function varargout = testGui_OutputFcn(hObject, eventdata, handles) 
+function varargout = testGui_OutputFcn(~, ~, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -97,19 +95,8 @@ function varargout = testGui_OutputFcn(hObject, eventdata, handles)
 % Get default command line output from handles structure
 varargout{1} = handles.output;
 
-
-% --- Executes on slider movement.
-function slider1_Callback(hObject, eventdata, handles)
-% hObject    handle to slider1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'Value') returns position of slider
-%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
-
-
 % --- Executes during object creation, after setting all properties.
-function slider1_CreateFcn(hObject, eventdata, handles)
+function slider1_CreateFcn(hObject, ~, ~)
 % hObject    handle to slider1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -119,9 +106,8 @@ if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColo
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
 
-
 % --- Executes on selection change in listbox1.
-function listbox1_Callback(hObject, eventdata, handles)
+function listbox1_Callback(hObject, ~, handles)
 % hObject    handle to listbox1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -142,7 +128,7 @@ else
 end
 
 % --- Executes during object creation, after setting all properties.
-function listbox1_CreateFcn(hObject, eventdata, handles)
+function listbox1_CreateFcn(hObject, ~, ~)
 % hObject    handle to listbox1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -154,7 +140,7 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 % --- Executes on selection change in listbox2.
-function listbox2_Callback(hObject, eventdata, handles)
+function listbox2_Callback(hObject, ~, handles)
 % hObject    handle to listbox2 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -174,7 +160,7 @@ else
 end
 
 % --- Executes during object creation, after setting all properties.
-function listbox2_CreateFcn(hObject, eventdata, handles)
+function listbox2_CreateFcn(hObject, ~, ~)
 % hObject    handle to listbox2 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -186,7 +172,7 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 % --- Executes on selection change in listbox3.
-function listbox3_Callback(hObject, eventdata, handles)
+function listbox3_Callback(hObject, ~, handles)
 % hObject    handle to listbox3 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -207,7 +193,7 @@ else
 end
 
 % --- Executes during object creation, after setting all properties.
-function listbox3_CreateFcn(hObject, eventdata, handles)
+function listbox3_CreateFcn(hObject, ~, ~)
 % hObject    handle to listbox3 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -217,7 +203,6 @@ function listbox3_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
 
 % --- Executes on selection change in popupmenu1.
 function popupmenu1_Callback(~, ~, handles)
@@ -235,10 +220,8 @@ else
     set(handles.popupmenu4,'String',{'no thresh','PFA 2.5e-3 (100 pix)', 'PFA 5e-4 (20 pix)','PFA 1.25e-4 (5 pix)'});
 end
 
-
-
 % --- Executes during object creation, after setting all properties.
-function popupmenu1_CreateFcn(hObject, eventdata, handles)
+function popupmenu1_CreateFcn(hObject, ~, ~)
 % hObject    handle to popupmenu1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -249,19 +232,8 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
-function edit2_Callback(hObject, eventdata, handles)
-% hObject    handle to edit2 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of edit2 as text
-%        str2double(get(hObject,'String')) returns contents of edit2 as a double
-
-
 % --- Executes during object creation, after setting all properties.
-function edit2_CreateFcn(hObject, eventdata, handles)
+function edit2_CreateFcn(hObject, ~, ~)
 % hObject    handle to edit2 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -272,18 +244,8 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-% --- Executes on button press in checkbox1.
-function checkbox1_Callback(hObject, eventdata, handles)
-% hObject    handle to checkbox1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of checkbox1
-
-
 % --- Executes on selection change in popupmenu2.
-function popupmenu2_Callback(hObject, eventdata, handles)
+function popupmenu2_Callback(hObject, ~, handles)
 % hObject    handle to popupmenu2 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -293,7 +255,7 @@ function popupmenu2_Callback(hObject, eventdata, handles)
 % Get value of popup
 selectedIndex = get(handles.popupmenu2, 'value');
 % Take action based upon selection
-if selectedIndex  == 1 & sum(strcmp(fieldnames(handles), 'spectra')) == 0
+if selectedIndex  == 1 && sum(strcmp(fieldnames(handles), 'spectra')) == 0
     set(handles.pushbuttonAnalyze,'enable','off');
 elseif sum(strcmp(fieldnames(handles), 'datainfo')) == 0
     warndlg('Please load MSOT data before providing spectra','Warning!');
@@ -368,6 +330,7 @@ if FileNameRecon
         % Find any variable in the file that starts with "Recon"
         % Depending on the dimensionality annotate
         handles.reconNodes = 1;
+        set(handles.text9, 'String', ""), drawnow();
         set(handles.text10, 'String', "Loading Recon Structure.."), drawnow();
         handles.ReconLoad = load([PathNameRecon '\' FileNameRecon]);
         load_vars = fieldnames(handles.ReconLoad);
@@ -382,7 +345,7 @@ if FileNameRecon
             end
         end
         %get the reconstructed images
-        tmpRecon = getfield(handles.ReconLoad, load_vars{idx_field});
+        tmpRecon = getfield(handles.ReconLoad, load_vars{idx_field}); %#ok<GFLD>
 
         switch length(size(tmpRecon))
             case 3
@@ -514,20 +477,8 @@ else
     return;
 end
 
-
-
-% --- Executes on selection change in popupmenu3.
-function popupmenu3_Callback(hObject, eventdata, handles)
-% hObject    handle to popupmenu3 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns popupmenu3 contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from popupmenu3
-
-
 % --- Executes during object creation, after setting all properties.
-function popupmenu3_CreateFcn(hObject, eventdata, handles)
+function popupmenu3_CreateFcn(hObject, ~, ~)
 % hObject    handle to popupmenu3 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -538,9 +489,8 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
 % --- Executes on button press in pushbuttonCalSpec.
-function pushbuttonCalSpec_Callback(hObject, eventdata, handles)
+function pushbuttonCalSpec_Callback(hObject, ~, handles)
 % hObject    handle to pushbuttonCalSpec (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -567,16 +517,13 @@ end
 set(handles.pushbuttonCalSpec,'enable','off');
 guidata(hObject, handles);
 
-
-
-
 % --- Executes on button press in pushbuttonSpec.
-function pushbuttonSpec_Callback(hObject, eventdata, handles)
+function pushbuttonSpec_Callback(hObject, ~, handles)
 % hObject    handle to pushbuttonSpec (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-[FileNameSpec,PathNameSpec,FilterIndexSpec] = uigetfile({'*.xls'});
+[FileNameSpec,PathNameSpec,~] = uigetfile({'*.xls'});
 if FileNameSpec
     target_spec = xlsread([PathNameSpec '\' FileNameSpec]);
     target_spec(target_spec<0) = 0;
@@ -592,7 +539,7 @@ if FileNameSpec
     axis tight;
 end
 
-% --- Executes on button press in pushbuttonAnalyze.
+% --- Executes on button press in pushbuttonAnalyze. ("unmix.." button)
 function pushbuttonAnalyze_Callback(hObject, ~, handles)
 % hObject    handle to pushbuttonAnalyze (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -690,6 +637,8 @@ else
     covAll = [];
 end
 set(handles.text10,'String','Processing...');
+% Unmixing
+Analysis = zeros(size(handles.Recon,1), size(handles.Recon,2), 3, size(handles.Recon,3));   % 3: RGB components
 for slice=1:size(handles.Recon,3)
     R = squeeze(handles.Recon(:,:,slice,:));
     HM(:,:,1,:) = R;
@@ -713,29 +662,21 @@ for slice=1:size(handles.Recon,3)
     end
     handles.Unmixed(:,:,slice) = squeeze(umx);
     im = R(:,:,handles.CurrWav);
-    Analysis(:,:,:,slice) = ImOverlayR(im,squeeze(umx),1,'test'); close;
+    Analysis(:,:,:,slice) = ImOverlayR(im, squeeze(umx)); close;
 end
-set(handles.text10,'String','Ready');
-    % [umx_rsdf_ecglrt, A] = unmix_AMF_all(mixed, handles.datainfo.Wavelengths, handles.spectra, method, cov_gl,1,[],[],[]);
+
+% show overlayed image (im+umx)
 handles.Analysis = Analysis;
-axes(handles.axes1);
-image(uint8(255*squeeze(handles.Analysis(:,:,:,handles.CurrSlice)))); axis off; axis equal;
+axes(handles.axes1),
+    image(uint8(255*squeeze(handles.Analysis(:,:,:,handles.CurrSlice)))); axis off; axis equal;
+
+set(handles.text10,'String','Ready');
+% [umx_rsdf_ecglrt, A] = unmix_AMF_all(mixed, handles.datainfo.Wavelengths, handles.spectra, method, cov_gl,1,[],[],[]);
 guidata(hObject, handles);
 set(handles.pushbutton6,'enable','on');
 
-
-% --- Executes on selection change in popupmenu4.
-function popupmenu4_Callback(hObject, eventdata, handles)
-% hObject    handle to popupmenu4 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns popupmenu4 contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from popupmenu4
-
-
 % --- Executes during object creation, after setting all properties.
-function popupmenu4_CreateFcn(hObject, eventdata, handles)
+function popupmenu4_CreateFcn(hObject, ~, ~)
 % hObject    handle to popupmenu4 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -746,9 +687,8 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-% --- Executes on button press in pushbutton6.
-function pushbutton6_Callback(hObject, eventdata, handles)
+% --- Executes on button press in pushbutton6. ("Export")
+function pushbutton6_Callback(~, ~, handles)
 % hObject    handle to pushbutton6 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -780,55 +720,55 @@ mkdir([folder_name '\unmixed']);
 
 set(handles.text10,'String','Processing');
 
-for i=1:size(handles.Analysis,4)
-    for j=1:size(handles.Analysis,5)
-         save_file = [folder_name '\overlays' '\' handles.datainfo.Name '_Overlay_Slice' int2str(j) 'Run' int2str(i) 'Alg' method 'Thresh' num2str(thresh) 'Vis' num2str(vis) '.tif'];
-         imwrite(squeeze(handles.Analysis(:,:,:,i,j)),save_file);        
-    end
-end
-
+% write anatomical images
 for i=1:size(handles.Recon,3)
     for j=1:size(handles.Recon,4)
-         save_file = [folder_name '\anatomical' '\' handles.datainfo.Name '_Anatomical_Slice' int2str(j) 'Run' int2str(i) 'Alg' method '.tif'];
-         R =squeeze(handles.Recon(:,:,i,j,1,handles.CurrWav));
+         save_file = [folder_name '\anatomical' '\' handles.datainfo.Name '_Anatomical_Slice' int2str(i) '_wl' int2str(j) 'Alg' method '.tif'];
+         R =squeeze(handles.Recon(:,:,i,j));
          R = R-min(R(:)); R = R./max(R(:));
          imwrite(R,save_file);        
     end
 end
-
+% write unmixing images
 for i=1:size(handles.Unmixed,3)
-    for j=1:size(handles.Unmixed,4)
-         save_file = [folder_name '\unmixed' '\' handles.datainfo.Name '_Unmixed_Slice' int2str(j) 'Run' int2str(i) 'Alg' method 'Thresh' num2str(thresh) 'Vis' num2str(vis) '.tif'];
-         imwrite(squeeze(handles.Unmixed(:,:,i,j)),save_file);        
-    end
+     save_file = [folder_name '\unmixed' '\' handles.datainfo.Name '_Unmixed_Slice' int2str(i) 'Alg' method 'Thresh' num2str(thresh) 'Vis' num2str(vis) '.tif'];
+     imwrite(squeeze(handles.Unmixed(:,:,i)),save_file);        
 end
+% write overlayed (anatomical+unmixing) images
+for i=1:size(handles.Analysis, 4)       %N.B. here in Analysis, the idx of Slc is 4 (not 3 as usual), as the 3rd idx is for the RGB components
+     save_file = [folder_name '\overlays' '\' handles.datainfo.Name '_Overlay_Slice' int2str(i) 'Alg' method 'Thresh' num2str(thresh) 'Vis' num2str(vis) '.tif'];
+     imwrite(squeeze(handles.Analysis(:,:,:,i)),save_file);       
+end
+
 if size(handles.datainfo.Wavelengths,2)>1
     xlswrite([folder_name '\unmixed\spectrum.xls'],[handles.datainfo.Wavelengths' handles.spectra(1,:)']);
 else
     xlswrite([folder_name '\unmixed\spectrum.xls'],[handles.datainfo.Wavelengths handles.spectra(1,:)']);
 end
 set(handles.text10,'String','Ready');
+disp("Export done.");
 
 % --- Executes on button press in pushbutton8.
-function pushbutton8_Callback(hObject, eventdata, handles)
+function pushbutton8_Callback(~, ~, ~)
 % hObject    handle to pushbutton8 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-Message = {'This software implements spectral detection algorithms for MSOT molecular target detection.' ,
-           'For a thorough description of the algorithms refer to ',
-           '',
-           'S. Tzoumas, et. al., "Unmixing molecular agents from absorbing tissue in multispectral optoacoustic tomography, Medical Imaging, IEEE Transactions on, 2014. ' ,
-           '',
-           'S. Tzoumas, et. al., "Statistical molecular target detection framework for multispectral optoacoustic tomography," Medical Imaging, IEEE Transactions on, 2016.' ,
-           '',
-           'For information on how to use the GUI please read the readme.doc file' ,
-           'For reporting bugs or for any other issues please contact strtzoumas@gmail.com'}
-       
-Title = 'Info';
-h = msgbox(Message,Title);
+% 
+% Message = {'This software implements spectral detection algorithms for MSOT molecular target detection.' ,
+%            'For a thorough description of the algorithms refer to ',
+%            '',
+%            'S. Tzoumas, et. al., "Unmixing molecular agents from absorbing tissue in multispectral optoacoustic tomography, Medical Imaging, IEEE Transactions on, 2014. ' ,
+%            '',
+%            'S. Tzoumas, et. al., "Statistical molecular target detection framework for multispectral optoacoustic tomography," Medical Imaging, IEEE Transactions on, 2016.' ,
+%            '',
+%            'For information on how to use the GUI please read the readme.doc file' ,
+%            'For reporting bugs or for any other issues please contact strtzoumas@gmail.com'}
+%        
+% Title = 'Info';
+% h = msgbox(Message,Title);
 
 % --- Executes on button press in pushbuttonSelectROI.
-function pushbuttonSelectROI_Callback(hObject, eventdata, handles)
+function pushbuttonSelectROI_Callback(hObject, ~, handles)
 % hObject    handle to pushbuttonSelectROI (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -856,7 +796,7 @@ handles.y_int = -1;
 guidata(hObject, handles);
 
 % --- Executes on button press in pushbuttonExpSpec.
-function pushbuttonExpSpec_Callback(hObject, eventdata, handles)
+function pushbuttonExpSpec_Callback(~, ~, handles)
 % hObject    handle to pushbuttonExpSpec (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -872,8 +812,7 @@ else
     xlswrite(file,[handles.datainfo.Wavelengths  handles.spec_int']);
 end
 
-
-function getMousePositionOnImage(src, event)
+function getMousePositionOnImage(src, ~)
 handles = guidata(src);
 
 cursorPoint = get(handles.axes1, 'CurrentPoint');
@@ -903,19 +842,8 @@ else
 end
 guidata(src, handles);
 
-
-
-function edit3_Callback(hObject, eventdata, handles)
-% hObject    handle to edit3 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of edit3 as text
-%        str2double(get(hObject,'String')) returns contents of edit3 as a double
-
-
 % --- Executes during object creation, after setting all properties.
-function edit3_CreateFcn(hObject, eventdata, handles)
+function edit3_CreateFcn(hObject, ~, ~)
 % hObject    handle to edit3 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -926,103 +854,8 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-%Version 2
-
-% --- Executes on selection change in lb_recon.
-function lb_recon_Callback(hObject, eventdata, handles)
-% hObject    handle to lb_recon (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns lb_recon contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from lb_recon
-
-if handles.reconNodes >1;
-
-   if any(strcmp('datainfoKeep',fieldnames(handles)))
-        handles.datainfo = handles.datainfoKeep;
-   end
-        
-        
-    recon_node = get(handles.lb_recon,'value');
-
-    %to be copied in listbox
-    selInd = get(handles.lb_recon,'Value');
-    contents = get(handles.lb_recon,'String');
-    FileNameRecon = contents{selInd};   
-
-    [Recon_MB_L1 wls zpos ts datainfo] = loadMSOTRecon(handles.datainfo,selInd);
-
-    % Need to make sure on how the data are loaded
-    if length(size(Recon_MB_L1)) == 6
-        Nx = size(Recon_MB_L1,1);
-        Ny = size(Recon_MB_L1,2);
-        Nr = size(Recon_MB_L1,3);
-        Ns = size(Recon_MB_L1,4);
-        Nt = size(Recon_MB_L1,5);
-        Nw = size(Recon_MB_L1,6);
-    elseif length(size(Recon_MB_L1)) == 7
-        Recon_MB_L1 = mean(Recon_MB_L1,7);
-        Nx = size(Recon_MB_L1,1);
-        Ny = size(Recon_MB_L1,2);
-        Nr = size(Recon_MB_L1,3);
-        Ns = size(Recon_MB_L1,4);
-        Nt = size(Recon_MB_L1,5);
-        Nw = size(Recon_MB_L1,6);
-        Na = size(Recon_MB_L1,7);
-        Recon_MB_L1= mean(Recon_MB_L1,7);
-    else
-        warning('inconsistent data');
-    end
-    handles.Recon = Recon_MB_L1;
-
-    set(handles.pushbuttonSpec,'enable','on');
-    set(handles.pushbuttonCalSpec,'enable','on');
-    handles.datainfo.Wavelengths
-
-    % set(handles.listbox1)
-    clear handles.listbox1;
-    clear handles.listbox2;
-    clear handles.listbox3;
-    set(handles.listbox1,'string',1:length(datainfo.ZPositions));
-    set(handles.listbox2,'string',1:length(datainfo.RunNum));
-    set(handles.listbox3,'string',handles.datainfo.Wavelengths);
-
-    handles.CurrSlice = 1;
-    handles.CurrRep = 1;
-    handles.CurrWav = length(handles.datainfo.Wavelengths);
-
-     set(handles.pushbuttonAnalyze,'enable','off');
-    %     clear handles.Analysis 
-    %     clear handles.Unmixed 
-    %     clear handles.spectra
-    if any(strcmp('Analysis',fieldnames(handles)))
-    handles = rmfield(handles,'Analysis');
-    %     delete(handles.Analysis);
-    % disp('remove handles')
-    end
-
-    if any(strcmp('Unmixed',fieldnames(handles)))
-    handles = rmfield(handles,'Unmixed');
-    % disp('remove handles')
-    end
-
-    if any(strcmp('spectra',fieldnames(handles)))
-    handles = rmfield(handles,'spectra');
-    % disp('remove handles')
-    end
-
-    set(handles.text9,'String',handles.datainfo.Name);
-
-    R = squeeze(handles.Recon(:,:,handles.CurrRep,handles.CurrSlice,1,end));
-    axes(handles.axes1);
-    imagesc(R(:,:)); colormap('gray'); axis off; axis equal;
-    guidata(hObject, handles);
-end
-
 % --- Executes during object creation, after setting all properties.
-function lb_recon_CreateFcn(hObject, ~, ~)
+function lb_recon_CreateFcn(hObject, ~, ~)      % Listbox above "Target Spectrum"
 % hObject    handle to lb_recon (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -1032,3 +865,96 @@ function lb_recon_CreateFcn(hObject, ~, ~)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+% % --- Executes on selection change in lb_recon.
+% function lb_recon_Callback(hObject, ~, handles)
+% % hObject    handle to lb_recon (see GCBO)
+% % eventdata  reserved - to be defined in a future version of MATLAB
+% % handles    structure with handles and user data (see GUIDATA)
+% 
+% % Hints: contents = cellstr(get(hObject,'String')) returns lb_recon contents as cell array
+% %        contents{get(hObject,'Value')} returns selected item from lb_recon
+% 
+% if handles.reconNodes >1;
+% 
+%    if any(strcmp('datainfoKeep',fieldnames(handles)))
+%         handles.datainfo = handles.datainfoKeep;
+%    end
+%         
+%         
+%     recon_node = get(handles.lb_recon,'value');
+% 
+%     %to be copied in listbox
+%     selInd = get(handles.lb_recon,'Value');
+%     contents = get(handles.lb_recon,'String');
+%     FileNameRecon = contents{selInd};   
+% 
+%     [Recon_MB_L1 wls zpos ts datainfo] = loadMSOTRecon(handles.datainfo,selInd);
+% 
+%     % Need to make sure on how the data are loaded
+%     if length(size(Recon_MB_L1)) == 6
+%         Nx = size(Recon_MB_L1,1);
+%         Ny = size(Recon_MB_L1,2);
+%         Nr = size(Recon_MB_L1,3);
+%         Ns = size(Recon_MB_L1,4);
+%         Nt = size(Recon_MB_L1,5);
+%         Nw = size(Recon_MB_L1,6);
+%     elseif length(size(Recon_MB_L1)) == 7
+%         Recon_MB_L1 = mean(Recon_MB_L1,7);
+%         Nx = size(Recon_MB_L1,1);
+%         Ny = size(Recon_MB_L1,2);
+%         Nr = size(Recon_MB_L1,3);
+%         Ns = size(Recon_MB_L1,4);
+%         Nt = size(Recon_MB_L1,5);
+%         Nw = size(Recon_MB_L1,6);
+%         Na = size(Recon_MB_L1,7);
+%         Recon_MB_L1= mean(Recon_MB_L1,7);
+%     else
+%         warning('inconsistent data');
+%     end
+%     handles.Recon = Recon_MB_L1;
+% 
+%     set(handles.pushbuttonSpec,'enable','on');
+%     set(handles.pushbuttonCalSpec,'enable','on');
+%     handles.datainfo.Wavelengths
+% 
+%     % set(handles.listbox1)
+%     clear handles.listbox1;
+%     clear handles.listbox2;
+%     clear handles.listbox3;
+%     set(handles.listbox1,'string',1:length(datainfo.ZPositions));
+%     set(handles.listbox2,'string',1:length(datainfo.RunNum));
+%     set(handles.listbox3,'string',handles.datainfo.Wavelengths);
+% 
+%     handles.CurrSlice = 1;
+%     handles.CurrRep = 1;
+%     handles.CurrWav = length(handles.datainfo.Wavelengths);
+% 
+%      set(handles.pushbuttonAnalyze,'enable','off');
+%     %     clear handles.Analysis 
+%     %     clear handles.Unmixed 
+%     %     clear handles.spectra
+%     if any(strcmp('Analysis',fieldnames(handles)))
+%     handles = rmfield(handles,'Analysis');
+%     %     delete(handles.Analysis);
+%     % disp('remove handles')
+%     end
+% 
+%     if any(strcmp('Unmixed',fieldnames(handles)))
+%     handles = rmfield(handles,'Unmixed');
+%     % disp('remove handles')
+%     end
+% 
+%     if any(strcmp('spectra',fieldnames(handles)))
+%     handles = rmfield(handles,'spectra');
+%     % disp('remove handles')
+%     end
+% 
+%     set(handles.text9,'String',handles.datainfo.Name);
+% 
+%     R = squeeze(handles.Recon(:,:,handles.CurrRep,handles.CurrSlice,1,end));
+%     axes(handles.axes1);
+%     imagesc(R(:,:)); colormap('gray'); axis off; axis equal;
+%     guidata(hObject, handles);
+% end
+% 

@@ -5,13 +5,13 @@ scan_path_parts = strsplit(scan_path, '\');
 datainfo = loadMSOT((scan_path+"\"+scan_path_parts(end)+".msot"));
 nonNeg = [
           false;
-          true;
+%           true;
                 ];
 % c = linspace("");
-RECON_ALL = true;       % !! if true, 'recon_lims' is ignored!!
+RECON_ALL = false;       % !! if true, 'recon_lims' is ignored!!
 recon_lims.zpos = [1 1];
 % recon_lims.wls = [1 length(datainfo.Wavelengths)];
-recon_lims.wls = [1 1];
+recon_lims.wls = [17 17];
 addtnl_note = "";       % additional note to be added at the end of the recon file name (e.g. --noReg || --f_min_0 || --f_max_5)
 
 for i = 1:length(nonNeg)
@@ -20,19 +20,20 @@ end
 
 %% showing single recon (conv MB)
 disp('------------ Script "showing single recon (conv MB)" ------------');
-study = "Qutaiba\phantom_3";     %"Marwan\(2017-03-03) testing phantom ink+straw" || "Qutaiba\phantom_2" ||
-scan = "Scan_2";
-recon = "MB_Tik-nonNeg_0-zpos_22-wl_31-res_75-w_30";
-recon_path = datasets__path+"\"+study+"\"+scan+"\RECONs\"+recon+"\"+recon+".mat";
-zpos = 13.5;
-wl = 820;
+study = "Qutaiba\Study_4";     %"Marwan\(2017-03-03) testing phantom ink+straw" || "Qutaiba\phantom_2" ||
+scan = "Scan_4";
+recon = "MB_Tik-nonNeg_0-zposs_8-wls_31";
+recon_path = datasets__path+"\"+study+"\"+scan+"\recons\"+recon+"\"+recon+".mat";
+% zpos = 59.6200;
+zpos_idx = 1;
+wl = 850;
 
 disp("Loading recon structure..");
 load(recon_path);
 disp_last_line("done.");
 wl_idx = find(datainfo.Wavelengths==wl);
-zpos_idx = find(datainfo.ZPositions==zpos);
-figure, imagesc(Recon_MB(:,:,1,zpos_idx,1,wl_idx));
+% zpos_idx = find(datainfo.ZPositions==zpos);
+figure, imagesc(Recon(:,:,1,zpos_idx,1,wl_idx));
     title(("conv MB"+" (recon: "+study+"\"+scan+"\"+recon+") @ zpos="+zpos+" & wl="+wl), 'interpreter', 'none'), colormap(bone), colorbar, axis image off
 
 %% showing single recon (wMB)
@@ -88,15 +89,15 @@ disp('------------ Script "showing all wls @ certain zpos" ------------');
 % close all;
 % scan_path = [datasets__path '\Marwan\(2017-03-03) testing phantom ink+straw\Scan_16'];    % \Qutaiba phantom\Scan_5 || Marwan\(2017-03-03) testing phantom ink+straw\Scan_16
 zpos = 1;
-study = "Qutaiba\phantom_3\";     %"Marwan\(2017-03-03) testing phantom ink+straw" || "Qutaiba phantom 2" ||
-scan = "Scan_2";
-recon_fName = "MB_Tik-nonNeg_0-zpos_22-wl_31-res_75-w_30";
+study = "Qutaiba\Study_4\";     %"Marwan\(2017-03-03) testing phantom ink+straw" || "Qutaiba phantom 2" ||
+scan = "Scan_4";
+recon_fName = "MB_Tik-nonNeg_0-zposs_8-wls_31";
 recon_path = datasets__path+"\"+study+"\"+scan+"\recons\"+recon_fName+"\"+recon_fName+".mat";
 
 load(recon_path)
-for wl_idx = 1:3:length(datainfo.Wavelengths)
-  figure, imagesc(Recon_MB(:,:,1,zpos,1,wl_idx)),...
-    title("conv MB - wl = "+ int2str(datainfo.Wavelengths(wl_idx)) + " (scan: " + study+"\"+scan + ")"), colormap(bone), colorbar, axis image off
+for wl_idx = 1:length(datainfo.Wavelengths)
+  figure, imagesc(Recon(:,:,1,zpos,1,wl_idx)),...
+    title("conv MB - wl = "+ int2str(datainfo.Wavelengths(wl_idx)) + " (scan: " + study+scan + ")"), colormap(bone), colorbar, axis image off
 end
 
 %% adapt hist eq to enahnce contrast of Qutaib phantom_2 & show borders
@@ -107,7 +108,7 @@ end
 % recon_path = datasets__path+"\"+study+"\"+scan+"\recons\"+recon_to_show+".mat";
 % 
 % load(recon_path)
-% test_im = mat2gray(Recon_MB(:,:,1,1,1,2));    % normalize image before histogram eqlztn
+% test_im = mat2gray(Recon(:,:,1,1,1,2));    % normalize image before histogram eqlztn
 % test_im_enhncd = adapthisteq(test_im, "NumTiles", [4,4]);
 % figure, montage({test_im, test_im_enhncd});
 % % figure, imagesc(test_im_enhncd), colormap(bone), colorbar, axis image off
@@ -116,7 +117,7 @@ end
 disp('------------ Script "for wl_idx -> show all zpos (cross-sections)" ------------');
 wl_idx = 1;
 for zpos_idx = 1:length(datainfo.ZPositions)
-  figure, imagesc(Recon_MB(:,:,1,zpos_idx,1,wl_idx)), title(["conv MB - wl = " int2str(datainfo.Wavelengths(wl_idx)) " - zpos = " int2str(datainfo.ZPositions(zpos_idx))]), colormap(bone), colorbar, axis image off
+  figure, imagesc(Recon(:,:,1,zpos_idx,1,wl_idx)), title(["conv MB - wl = " int2str(datainfo.Wavelengths(wl_idx)) " - zpos = " int2str(datainfo.ZPositions(zpos_idx))]), colormap(bone), colorbar, axis image off
 end
 
 %% Reconstructing several scans (wMB)
