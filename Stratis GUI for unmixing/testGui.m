@@ -22,7 +22,7 @@ function varargout = testGui(varargin)
 
 % Edit the above text to modify the response to help testGui
 
-% Last Modified by GUIDE v2.5 03-Aug-2021 17:51:45
+% Last Modified by GUIDE v2.5 03-Aug-2021 19:25:09
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -636,7 +636,9 @@ else
     cov_gl = [];
     covAll = [];
 end
+
 set(handles.text10,'String','Processing...');
+
 % Unmixing
 Analysis = zeros(size(handles.Recon,1), size(handles.Recon,2), 3, size(handles.Recon,3));   % 3: RGB components
 for slice=1:size(handles.Recon,3)
@@ -656,6 +658,7 @@ for slice=1:size(handles.Recon,3)
             umx = sqrt(umx);
         case 3
             umx = sqrt(sqrt(umx));
+%             umx = log(1+umx);
     end
     if max(umx(:)>0)
         umx = umx./max(umx(:));

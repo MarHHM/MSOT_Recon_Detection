@@ -8,6 +8,9 @@ function recon_wMB(scan_path, NON_NEG, LVc, RECON_ALL, recon_lims, base_convMB_r
 % - for each dataset, try different "w" till u find the best & save it
 % - nPairs --> if too large, can fill memory!!
 
+random_temp__path = tempname;   % creates a temporary file with different name at each run
+diary(random_temp__path);
+
 if nargin < 8
     shift = 0;
 end
@@ -29,8 +32,9 @@ P_r.nHist = 40;                 % originially in Luis code 40
 
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% main %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-disp("Loading base conv MB recon structure..");
-base_convMB_recon = load(scan_path+"\recons\"+base_convMB_recon__fName+"\"+base_convMB_recon__fName+".mat");      % load an aribtrary recon to test the masks
+base_convMB_recon__path = scan_path+"\recons\"+base_convMB_recon__fName+"\"+base_convMB_recon__fName+".mat";
+disp("Loading base conv MB recon structure ("+base_convMB_recon__path+")..");
+base_convMB_recon = load(base_convMB_recon__path);      % load an aribtrary recon to test the masks
 datainfo = base_convMB_recon.datainfo;
 im_w = base_convMB_recon.im_w;
 t = base_convMB_recon.t;
@@ -81,12 +85,11 @@ if strcmp(LUIS_WEIGHT_METHOD, "wMB+apriori")
 end
 
 %%% TEST - draw input slice & overlay masks A & B to check them
-mask_wholeTarget = rsmak( "circle", Rc_A*n/im_w, [(n/2+xc_A*n/im_w) (n/2+yc_A*n/im_w)] );
-figure("name", "just to confirm that masks are correct!!");
-    imagesc( imToChooseMask ), title( "conv MB - arbitrary slice" ), colormap( bone ), colorbar, axis image off;
-hold on, fnplt(mask_wholeTarget), axis image off, hold off;
-drawnow();
-%     print(h);       % forces the figure to be drawn, but sends it to the printer as well
+% mask_wholeTarget = rsmak( "circle", Rc_A*n/im_w, [(n/2+xc_A*n/im_w) (n/2+yc_A*n/im_w)] );
+% figure("name", "just to confirm that masks are correct!!");
+%     imagesc( imToChooseMask ), title( "conv MB - arbitrary slice" ), colormap( bone ), colorbar, axis image off;
+% hold on, fnplt(mask_wholeTarget), axis image off, hold off;
+% drawnow();
 
 % mask_reflector = rsmak( "circle", Rc_B*n/im_w, [(n/2+xc_B*n/im_w) (n/2+yc_B*n/im_w)] );
 % hold on; fnplt(mask_reflector), axis image off;
@@ -331,7 +334,7 @@ if SAVE_RECON
     
     % save a representative image (for ease of browsing later)
     rprsnttv_im = ReconW(:,:,1,1,1,1);
-    figure, imagesc(rprsnttv_im),...
+    figure('Position', [1.3082e+03 549.8000 469.6000 400]), imagesc(rprsnttv_im),...
         title(("recon: "+reconStruct__fName+" (rprsnttv_im)"), 'Interpreter', 'none'), colormap(bone), colorbar, axis image off;
     export_fig((reconStruct__path+"\"+reconStruct__fName+".png"), '-nocrop');
 end
@@ -343,3 +346,8 @@ end
 % S1=sqrt(Gx.*Gx+Gy.*Gy);
 % sharpness1=sum(sum(S1));
 % sharpness11=sum(sum(S1))./(numel(Gx));
+
+%%
+diary off;
+movefile(random_temp__path, (reconStruct__path+"\log.txt"));
+end
