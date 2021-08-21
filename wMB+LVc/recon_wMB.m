@@ -49,9 +49,8 @@ MB_regu = base_convMB_recon.MB_regu;
 P_r.nPairs = base_convMB_recon.n^2;              % originially in Luis code 500 (used also 50e3 in his paper) --> max theoritical should be "(n^2)^2" if both A & B cover the whole image
 A_matPath = base_convMB_recon.A_matPath;
 
-% n_det = datainfo.HWDesc.n_det;
+n_det = datainfo.HWDesc.NumDetectors;
 % r_sensor = datainfo.HWDesc.Radius;
-n_det = 256;
 r_sensor = 0.0405;
 T = base_convMB_recon.datainfo.AverageTemperature;
 c = 12 + round(1.402385 * 1e3 + 5.038813 * T - 5.799136 * 1e-2 * T^2 + 3.287156 * 1e-4 * T^3 - 1.398845 * 1e-6 * T^4 + 2.787860 * 1e-9 * T^5 );
@@ -120,16 +119,16 @@ for zpos_idx = 1 : zpos_end-zpos_begin+1
                         %%% accessing specific detector signals causing probs
                         j_c = floor( t_undercompnsated_ratio * length(t) );
                         
-                        % see "angles illustration.jpg"
-                        theta_start = -pi/4;            % start of detection ring (counting clock-wise !)
-                        total_detection_ring_coverage = 3*pi/2;         % inVision 256 coverage is 270 deg
-                        theta_end = theta_start + total_detection_ring_coverage;     % end of detection ring
-                        theta_step = (theta_end - theta_start)/(n_det);
-                        
-                        theta_1 = pi/2;             % start of detection part affected by Luis weighting method ("partial D_u" in my paper)
-                        theta_2 = pi;               % end of detection part affected by Luis weighting method
-                        det_idx_at_theta_1 = floor(theta_1/theta_step);
-                        det_idx_at_theta_2 = floor(theta_2/theta_step);
+                        % see "angles illustration" slide in ACCUMULATOR.pptx
+                        theta_start = datainfo.HWDesc.StartAngle;             % start of detection ring (counting clock-wise !)
+                        theta_end = datainfo.HWDesc.EndAngle;                   % end of detection ring
+                        delta_theta = datainfo.HWDesc.StepAngle;
+
+                        disp("new calculation of theta_1 & theta_2 (dynamic with varying theta_start & theta_end)");    % old caluclation had two errors that cancelled each other (wrong angle measuremnt & wrong detector indexing)
+                        theta_1 = theta_end - pi;       % start of detection part affected by Luis weighting method ("partial D_u (red ring)" in my paper)
+                        theta_2 = theta_start + pi;     % end of detection part affected by Luis weighting method
+                        det_idx_at_theta_1 = floor( (theta_1+abs(theta_start)) / delta_theta );   % abs(theta_start) -> bias between "zero of physical angle measurement" & "zero of detector indexing"
+                        det_idx_at_theta_2 = ceil( (theta_2+abs(theta_start)) / delta_theta );
                         
                         %             % detIdx = 256;
                         %             %         detSigRangeCausingProb = sigMat_truncated(:,det_idx_at_theta_1:det_idx_at_theta_2,1,1,1,1);
@@ -166,7 +165,7 @@ for zpos_idx = 1 : zpos_end-zpos_begin+1
                         % calculate the part of A covered by the current transducer for different time instants (A_ij for all t_j values for the current trans i)
                         A_ij = area_covered_detector_circle_distance( c, t, xc_A, yc_A, Rc_A, r_sensor, theta );
                         
-                        if LVc && (i >= det_idx_at_theta_1+shift) && (i <= det_idx_at_theta_2-shift)  % access detectors in red part (partial(D_u) in fig. 2a) & replace the latter part of A_ij(j) by the const A_ij(j_c) (i.e. fig. 2c)
+                        if LVc && (i >= (det_idx_at_theta_1+shift)) && (i <= (det_idx_at_theta_2-shift))  % access detectors in red part (partial(D_u) in fig. 2a) & replace the latter part of A_ij(j) by the const A_ij(j_c) (i.e. fig. 2c)
                             for j = 1:length(t)
                                 if j > j_c
                                     A_ij(j) = A_ij(j_c);
