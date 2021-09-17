@@ -1,4 +1,4 @@
-function recon_wMB(scan_path, NON_NEG, LVc, RECON_ALL, recon_lims, base_convMB_recon__fName, addtnl_note, shift)
+function recon_wMB(scan_path, NON_NEG, LVc, RECON_ALL, recon_lims, base_convMB_recon__fName, addtnl_note, theta_cvrg)
 %%% try Luis weighting (wBP - wBP with apriori - wMB)
 % LVc: false -> original wMB (Luis PMB 2013)
 
@@ -8,12 +8,12 @@ function recon_wMB(scan_path, NON_NEG, LVc, RECON_ALL, recon_lims, base_convMB_r
 % - for each dataset, try different "w" till u find the best & save it
 % - nPairs --> if too large, can fill memory!!
 
+if nargin < 8
+    theta_cvrg = 270;           % 270 -> default for inVision 256 - min for LVc is 180 deg (geometrical restriction)
+end
+
 random_temp__path = tempname;   % creates a temporary file with different name at each run
 diary(random_temp__path);
-
-if nargin < 8
-    shift = 0;
-end
 %% PARAMS
 SAVE_RECON = true;
 % SIGS_LOADED_IN_RAM = 1;               % if sigMat_truncated (from the convMB_tik) is already loaded in the RAM
@@ -48,6 +48,7 @@ t_res = base_convMB_recon.t_res;
 MB_regu = base_convMB_recon.MB_regu;
 P_r.nPairs = base_convMB_recon.n^2;              % originially in Luis code 500 (used also 50e3 in his paper) --> max theoritical should be "(n^2)^2" if both A & B cover the whole image
 A_matPath = base_convMB_recon.A_matPath;
+delta_theta = datainfo.HWDesc.StepAngle;
 
 n_det = datainfo.HWDesc.NumDetectors;
 % r_sensor = datainfo.HWDesc.Radius;
@@ -75,7 +76,11 @@ disp("--recon method: " + LUIS_WEIGHT_METHOD + " with w = " + num2str(w) + " - L
 % if ~SIGS_LOADED_IN_RAM
 %     [datainfo_recon, Recon_MB] = loadRecon_iThera(sigMat_pathName);
 % end
-imToChooseMask = base_convMB_recon.Recon(:, :, 1, 1, 1, 1);   % arbitrary slice shown to draw (or check) the mask
+try 
+    imToChooseMask = base_convMB_recon.Recon(:, :, 1, 1, 1, 1);   % arbitrary slice shown to draw (or check) the mask
+catch
+    imToChooseMask = base_convMB_recon.Recon_MB(:, :, 1, 1, 1, 1);
+end
 
 % load mask containing the whole target (all optical absorpers & acoustic reflectors - A in the 2011 paper)
 [xc_A, yc_A, Rc_A, logicalMask_A] = checkMask( LOAD_A_DIMS, "A", scan_path, imToChooseMask, im_w );
@@ -83,7 +88,7 @@ if strcmp(LUIS_WEIGHT_METHOD, "wMB+apriori")
     [~, ~, ~, logicalMask_B] = checkMask( LOAD_B_DIMS, "B", scan_path, imToChooseMask, im_w ); % also load mask containing acoustic reflectors (B in the 2001 APL apriori paper)
 end
 
-%%% TEST - draw input slice & overlay masks A & B to check them
+%%% draw input slice & overlay masks A & B to check them
 % mask_wholeTarget = rsmak( "circle", Rc_A*n/im_w, [(n/2+xc_A*n/im_w) (n/2+yc_A*n/im_w)] );
 % figure("name", "just to confirm that masks are correct!!");
 %     imagesc( imToChooseMask ), title( "conv MB - arbitrary slice" ), colormap( bone ), colorbar, axis image off;
@@ -107,24 +112,17 @@ for zpos_idx = 1 : zpos_end-zpos_begin+1
             sigMat_current = sigMat_truncated(:, :, 1, zpos_idx, rep_idx, wl_idx);
             
             switch LUIS_WEIGHT_METHOD
-                case "wMB"
-                    %                     Dxy = im_w/(n-1); % sampling distance in x and y
-                    %                     x = (-1)*(n/2-0.5)*Dxy:Dxy:(n/2-0.5)*Dxy; % position of pixels in the x direction
-                    %                     y = (-1)*(n/2-0.5)*Dxy:Dxy:(n/2-0.5)*Dxy; % position of pixels in the y direction
-                    %                     [X,Y] = meshgrid(x,y); % grid of points in x and y
-                    %                     nn = n*n;
-                    %                     lsqr_iter = 50;
-                    
+                case "wMB"                    
                     if LVc
                         %%% accessing specific detector signals causing probs
                         j_c = floor( t_undercompnsated_ratio * length(t) );
                         
                         % see "angles illustration" slide in ACCUMULATOR.pptx
-                        theta_start = datainfo.HWDesc.StartAngle;             % start of detection ring (counting clock-wise !)
-                        theta_end = datainfo.HWDesc.EndAngle;                   % end of detection ring
-                        delta_theta = datainfo.HWDesc.StepAngle;
+%                         disp("[TEST] implementing custom LV coverage angle..");
+                        delta_theta_cvrg = (270-theta_cvrg)*pi/180;
+                        theta_start = datainfo.HWDesc.StartAngle + (delta_theta_cvrg/2);        % start of detection ring (counting clock-wise !)
+                        theta_end = datainfo.HWDesc.EndAngle - (delta_theta_cvrg/2);            % end of detection ring
 
-                        disp("new calculation of theta_1 & theta_2 (dynamic with varying theta_start & theta_end)");    % old caluclation had two errors that cancelled each other (wrong angle measuremnt & wrong detector indexing)
                         theta_1 = theta_end - pi;       % start of detection part affected by Luis weighting method ("partial D_u (red ring)" in my paper)
                         theta_2 = theta_start + pi;     % end of detection part affected by Luis weighting method
                         det_idx_at_theta_1 = floor( (theta_1+abs(theta_start)) / delta_theta );   % abs(theta_start) -> bias between "zero of physical angle measurement" & "zero of detector indexing"
@@ -165,7 +163,7 @@ for zpos_idx = 1 : zpos_end-zpos_begin+1
                         % calculate the part of A covered by the current transducer for different time instants (A_ij for all t_j values for the current trans i)
                         A_ij = area_covered_detector_circle_distance( c, t, xc_A, yc_A, Rc_A, r_sensor, theta );
                         
-                        if LVc && (i >= (det_idx_at_theta_1+shift)) && (i <= (det_idx_at_theta_2-shift))  % access detectors in red part (partial(D_u) in fig. 2a) & replace the latter part of A_ij(j) by the const A_ij(j_c) (i.e. fig. 2c)
+                        if LVc && (i >= det_idx_at_theta_1) && (i <= det_idx_at_theta_2)  % access detectors in red part (partial(D_u) in fig. 2a) & replace the latter part of A_ij(j) by the const A_ij(j_c) (i.e. fig. 2c)
                             for j = 1:length(t)
                                 if j > j_c
                                     A_ij(j) = A_ij(j_c);
@@ -333,9 +331,11 @@ if SAVE_RECON
     
     % save a representative image (for ease of browsing later)
     rprsnttv_im = ReconW(:,:,1,1,1,1);
-    figure('Position', [1.3082e+03 549.8000 469.6000 400]), imagesc(rprsnttv_im),...
-        title(("recon: "+reconStruct__fName+" (rprsnttv_im)"), 'Interpreter', 'none'), colormap(bone), colorbar, axis image off;
+%     figure, imagesc(rprsnttv_im(7:283,25:308)),...
+    figure, imagesc(rprsnttv_im),...
+        title(("recon: "+reconStruct__fName+" (rprsnttv_im)"), 'Interpreter', 'none'), colormap(bone), axis image off;
     export_fig((reconStruct__path+"\"+reconStruct__fName+".png"), '-nocrop');
+    export_fig((reconStruct__path+"\"+reconStruct__fName+".fig"), '-nocrop');
 end
 
 %% sharpness calculation (Hong code) --> doesn"t work well with my algo!!

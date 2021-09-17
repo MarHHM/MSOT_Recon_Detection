@@ -1,9 +1,14 @@
-function recon_single_msot_scan(scan_path, NON_NEG, recon_lims, RECON_ALL, n_det__custom, addtnl_note)
+function recon_single_msot_scan(scan_path, NON_NEG, recon_lims, RECON_ALL, addtnl_note, theta_cvrg)
 %% VIPs:
 %     - choose correct path & desired recon ranges (for zpos, wls & reps)
 %     - don't forget to change the name of the saved recon to reflect the last changes u did (e.g. experimented with)
 %     - make sure that the dataset u will load is not huge if you use a normal PC (limited RAM)
 %     - if mouse data, 800nm is the important wl to show (isosbestic, best total blood signal)
+
+if nargin < 6
+    theta_cvrg = 270;       % 270 -> default for inVision 256 - min for LVc is 180 deg (geometrical restriction)
+end
+
 random_temp__path = tempname;   % creates a temporary file with different name at each run
 diary(random_temp__path);       % activate logging of command window
 %% PATHS & PARAMS
@@ -49,14 +54,11 @@ end
 
 %%% extract a stack from the whole measures to recon
 sigMat_truncated = sigMat(:,:,run_idx,zpos_begin:zpos_end,rep_begin:rep_end,wl_begin:wl_end);
-
-
-
-disp("[TEST] n_det__custom = "+int2str(n_det__custom)+" (dets at both ends are zeroed)");
+% disp("[TEST] theta_cvrg = "+int2str(theta_cvrg)+" (dets at both ends are zeroed)");
+n_det__custom = ceil( (theta_cvrg*pi/180) / datainfo.HWDesc.StepAngle );
 n_det__zeroed = datainfo.HWDesc.NumDetectors - n_det__custom;
 sigMat_truncated(:,(1:floor(n_det__zeroed/2)),:,:,:,:) = 0;
 sigMat_truncated(:,(end-(floor(n_det__zeroed/2))+1:end),:,:,:,:) = 0;
-
 
 %%% correct laser energy (NO NEED; done auto before loading the sigs by iThera function)
 % sigMat_truncated = normByLaserEnergy(sigMat_truncated, datainfo);
@@ -97,7 +99,7 @@ if RECON_METHOD == "MB_Tik" || RECON_METHOD == "MB_TVL1"
     
     % check for model matrix if saved, otherwise build & save it
     A_matPath = [MB_MAT__path '\A_mat_t_res_' num2str(t_res) '_' num2str(n) 'x' num2str(n) '_width_' num2str(im_w*1e3)...
-        '_c_' num2str(c) '_nDet_' num2str(length(angle_sensor)) '_t_' num2str(length(t)) '.mat'];
+                    '_c_' num2str(c) '_nDet_' num2str(length(angle_sensor)) '_t_' num2str(length(t)) '.mat'];
     A_mat = compOrLoadA_mat( A_matPath, c, n, im_w, t, datainfo.HWDesc.Radius, angle_sensor, n_angles );
 else
     A_matPath = "";
@@ -109,7 +111,7 @@ reconItr = 0;
 totNumRecons = size(Recon,3)*size(Recon,4)*size(Recon,5)*size(Recon,6);
 
 
-disp(['Reconstruction started (Method: ' RECON_METHOD ')..'])
+disp("-> Reconstruction started (Method: '"+ RECON_METHOD +"')..");
 for run_idx = 1:1
     for zpos_idx = 1 : zpos_end-zpos_begin+1
         for wl_idx = 1 : wl_end-wl_begin+1
@@ -133,7 +135,7 @@ for run_idx = 1:1
                 reconItr = reconItr+1;
                 
                 elpsd_t = toc;
-                disp(['recon ' num2str(reconItr) ' of ' num2str(totNumRecons) ' done (' num2str(elpsd_t) 's)..']);
+                fprintf('\t recon %i of %i done (%0.2f s)..\n', reconItr, totNumRecons, elpsd_t);
             end
         end
     end
@@ -159,9 +161,11 @@ if SAVE_RECON
     
     % save a representative image (for ease of browsing later)
     rprsnttv_im = Recon(:,:,1,1,1,1);
-    figure('Position', [1.3082e+03 549.8000 469.6000 400]), imagesc(rprsnttv_im),...
-        title(("recon: "+reconStruct__fName+" (rprsnttv_im)"), 'Interpreter', 'none'), colormap(bone), colorbar, axis image off;
+%     figure, imagesc(rprsnttv_im(7:283,25:308)),...
+    figure, imagesc(rprsnttv_im),...
+        title(("recon: "+reconStruct__fName+" (rprsnttv_im)"), 'Interpreter', 'none'), colormap(bone), axis image off;
     export_fig((reconStruct__path+"\"+reconStruct__fName+".png"), '-nocrop');
+    export_fig((reconStruct__path+"\"+reconStruct__fName+".fig"), '-nocrop');
 end
 
 diary off;

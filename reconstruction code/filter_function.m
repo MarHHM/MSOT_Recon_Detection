@@ -2,7 +2,7 @@ function [ sigMat ] = filter_function( sigMat, filter_f,fs)
 %FILTER_FUNCTION Summary of this function goes here
 %   Detailed explanation goes here
 % filter parameters
-disp('Filtering 1-D channels data before reconstruction...');
+% disp('-> Filtering 1D channels data before reconstruction...');
 if( filter_f(2) ~= 0 )
     f_LPF = filter_f(2);
     [b_LPF,a_LPF] = cheby1( 8, .01, 2 * f_LPF/fs * .92 );

@@ -1,67 +1,66 @@
-%% reconstruct single scan (conv MB)
-n_det__custom = 100;    % keep it even num
-addtnl_note = "--"+int2str(n_det__custom)+" det";       % additional note to be added at the end of the recon file name (e.g. --noReg || --f_min_0 || --f_max_5)
+%% reconstruct single scan (conv MB)  
+fprintf("\n------------ Script 'reconstruct single scan (conv MB)' ------------\r");
 
-disp('------------ Script "reconstruct single scan (conv MB)" ------------');
 scan_path = [datasets__path '\Marwan\(2017-03-03) testing phantom ink+straw\Scan_16'];    %  || Marwan\(2017-03-03) testing phantom ink+straw\Scan_16 || \Qutaiba\phantom_3\Scan_2 || '\Qutaiba\Study_4\Scan_4'
-scan_path_parts = strsplit(scan_path, '\');
-datainfo = loadMSOT((scan_path+"\"+scan_path_parts(end)+".msot"));
+% scan_path_parts = strsplit(scan_path, '\');
+% datainfo = loadMSOT((scan_path+"\"+scan_path_parts(end)+".msot"));
 nonNeg = [
-          false;
-%           true;
+%           false;
+          true;
                 ];
 RECON_ALL = false;       % !! if true, 'recon_lims' is ignored!!
 % recon_lims.zpos= [1 length(datainfo.ZPositions)];
 % recon_lims.wls = [1 length(datainfo.Wavelengths)];
-recon_lims.zpos = [1 1];
+recon_lims.zpos = [15 15];
 recon_lims.wls = [1 1];
+addtnl_note = "";       % additional note to be added at the end of the recon file name (e.g. --noReg || --f_min_0 || --f_max_5)
 
 for i = 1:length(nonNeg)
-  recon_single_msot_scan(scan_path, nonNeg(i), recon_lims, RECON_ALL, n_det__custom, addtnl_note);
+  recon_single_msot_scan(scan_path, nonNeg(i), recon_lims, RECON_ALL, addtnl_note);
 end
 
 %% showing single recon (conv MB)
 disp('------------ Script "showing single recon (conv MB)" ------------');
-study = "Qutaiba\Study_4";     %"Marwan\(2017-03-03) testing phantom ink+straw" || "Qutaiba\phantom_2" ||
-scan = "Scan_4";
-recon = "MB_Tik-nonNeg_0-zposs_8-wls_31";
+study = "Marwan\(2017-03-03) testing phantom ink+straw";     %"Marwan\(2017-03-03) testing phantom ink+straw" || "Qutaiba\phantom_2" ||
+scan = "Scan_16";
+recon = "MB_Tik-nonNeg_1-zposs_1-wls_1--thetaCvrg_180";
 recon_path = datasets__path+"\"+study+"\"+scan+"\recons\"+recon+"\"+recon+".mat";
 % zpos = 59.6200;
+% wl = 850;
 zpos_idx = 1;
-wl = 850;
+wl_idx = 1;
+
 
 disp("Loading recon structure..");
 load(recon_path);
 disp_last_line("done.");
-wl_idx = find(datainfo.Wavelengths==wl);
+% wl_idx = find(datainfo.Wavelengths==wl);
 % zpos_idx = find(datainfo.ZPositions==zpos);
 figure, imagesc(Recon(:,:,1,zpos_idx,1,wl_idx));
     title(("conv MB"+" (recon: "+study+"\"+scan+"\"+recon+") @ zpos="+zpos+" & wl="+wl), 'interpreter', 'none'), colormap(bone), colorbar, axis image off
     
 %% wMB --> reconstruct single scan
-n_det__custom = 200;    % keep it even num
-addtnl_note = "--"+int2str(n_det__custom)+" det";       % additional note to be added at the end of the recon file name (e.g. --noReg || --f_min_0 || --f_max_5)
+fprintf("\n------------ Script 'wMB --> reconstruct single scan' ------------\r");
 
-disp('------------ Script "wMB --> reconstruct single scan" ------------');
 scan_path = datasets__path+"\Marwan\(2017-03-03) testing phantom ink+straw\Scan_16";    % \Qutaiba\phantom_3\Scan_2 || Marwan\(2017-03-03) testing phantom ink+straw\Scan_16 ||
 base_convMB_recon__nonNeg = [
 %                              false;
                              true
                                     ];
 LVc = [
-       0;       % original wMB (Luis 2013)
-%        1        % my method
+%        0;       % original wMB (Luis 2013)
+       1        % my method
          ];
 RECON_ALL = false;      % !! if true, 'recon_lims' is ignored!!
 % recon_lims.zpos= [1 length(datainfo.ZPositions)];
 % recon_lims.wls = [1 length(datainfo.Wavelengths)];
-recon_lims.zpos = [1 1];
+recon_lims.zpos = [15 15];
 recon_lims.wls = [1 1];
+addtnl_note = "";       % additional note to be added at the end of the recon file name (e.g. --noReg || --f_min_0 || --f_max_5)
 
 for i = 1:length(base_convMB_recon__nonNeg)
     for j = 1:length(LVc)
       base_convMB_recon__fName = ("MB_Tik-nonNeg_"+ int2str(base_convMB_recon__nonNeg(i)) +"-zposs_20-wls_8"+addtnl_note);
-      %%% No need to input "n_det__custom" to "recon_wMB" as it's embedded in "sigMat__truncated" which is loaded from the "base_convMB_recon"
       recon_wMB(scan_path, base_convMB_recon__nonNeg(i), LVc(j), RECON_ALL, recon_lims, base_convMB_recon__fName, addtnl_note);
     end
 end
